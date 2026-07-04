@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>情報Ⅰ クイズアリーナ — 水野の教材ラボ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a0e1a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0e1a'/%3E%3Ctext x='32' y='46' font-size='34' text-anchor='middle' fill='%2360a5fa' font-weight='bold' font-family='sans-serif'%3E%3F%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=JetBrains+Mono:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0e1a; --card:rgba(255,255,255,.05); --border:rgba(255,255,255,.1);
+  --text:#e8ecf4; --sub:#8a94ab;
+  --blue:#60a5fa; --green:#34d399; --amber:#fbbf24; --rose:#fb7185; --violet:#a78bfa;
+  --mono:'JetBrains Mono',Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  background:
+    radial-gradient(ellipse 60% 40% at 20% -10%, rgba(96,165,250,.13), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 90% 5%, rgba(167,139,250,.11), transparent 60%),
+    var(--bg);
+  color:var(--text); font-family:'Noto Sans JP',sans-serif;
+  min-height:100vh; padding:20px 16px 60px;
+}
+.wrap{max-width:640px;margin:0 auto}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.back{color:var(--sub);text-decoration:none;font-size:.85rem;font-weight:600}
+.back:hover{color:var(--text)}
+h1{font-size:clamp(1.3rem,4.5vw,1.7rem);font-weight:900;text-align:center;margin-bottom:6px}
+h1 .g{background:linear-gradient(90deg,var(--blue),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{text-align:center;color:var(--sub);font-size:.85rem;margin-bottom:24px}
+.box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:26px 22px;animation:fade .3s}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* スタート画面 */
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+.cat{
+  padding:20px 14px;border-radius:16px;border:1px solid var(--border);
+  background:rgba(255,255,255,.03);cursor:pointer;text-align:center;
+  transition:all .2s;font-family:inherit;color:var(--text);
+}
+.cat:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.25)}
+.cat .em{font-size:1.8rem;display:block;margin-bottom:6px}
+.cat .nm{font-weight:800;font-size:.92rem}
+.cat .ct{font-size:.72rem;color:var(--sub)}
+.all-btn{
+  width:100%;padding:15px;border-radius:14px;border:none;cursor:pointer;
+  font-weight:900;font-size:1rem;font-family:inherit;color:#0a0e1a;
+  background:linear-gradient(90deg,var(--blue),var(--violet));
+  box-shadow:0 8px 24px rgba(96,165,250,.3);transition:transform .15s;
+}
+.all-btn:active{transform:scale(.97)}
+
+/* 出題画面 */
+.hud{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:.8rem;color:var(--sub)}
+.hud b{font-family:var(--mono);color:var(--amber)}
+.bar{height:6px;border-radius:3px;background:rgba(255,255,255,.08);margin-bottom:22px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--violet));transition:width .3s;border-radius:3px}
+.q-cat{font-size:.72rem;font-weight:700;color:var(--violet);letter-spacing:.1em;margin-bottom:8px}
+.q{font-size:1.08rem;font-weight:700;line-height:1.7;margin-bottom:24px;min-height:3.4em}
+.opts{display:grid;gap:11px}
+.opt{
+  padding:15px 18px;border-radius:14px;border:1px solid var(--border);
+  background:rgba(255,255,255,.03);cursor:pointer;text-align:left;
+  font-size:.95rem;font-weight:500;color:var(--text);font-family:inherit;
+  transition:all .18s;display:flex;gap:12px;align-items:center;
+}
+.opt .k{
+  flex:0 0 28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.07);font-family:var(--mono);font-weight:800;font-size:.8rem;color:var(--sub);
+}
+.opt:not(:disabled):hover{border-color:var(--blue);background:rgba(96,165,250,.08)}
+.opt:disabled{cursor:default}
+.opt.correct{border-color:var(--green);background:rgba(52,211,153,.14);color:var(--green);font-weight:800}
+.opt.wrong{border-color:var(--rose);background:rgba(251,113,133,.12);color:var(--rose)}
+.opt.dim{opacity:.4}
+.fb{margin-top:18px;min-height:56px;font-size:.85rem;color:var(--sub);line-height:1.7}
+.fb b{font-size:1rem}
+.fb .yes{color:var(--green)} .fb .no{color:var(--rose)}
+.next-btn{
+  margin-top:14px;width:100%;padding:13px;border-radius:12px;border:none;cursor:pointer;
+  font-weight:800;font-size:.95rem;font-family:inherit;color:#0a0e1a;
+  background:linear-gradient(90deg,var(--blue),var(--violet));display:none;
+}
+
+/* 結果画面 */
+.res-em{font-size:3.4rem;text-align:center;margin-bottom:8px}
+.res-title{text-align:center;font-size:1.4rem;font-weight:900;margin-bottom:6px}
+.res-score{text-align:center;font-family:var(--mono);font-size:2.6rem;font-weight:800;color:var(--amber);margin-bottom:4px}
+.res-sub{text-align:center;color:var(--sub);font-size:.85rem;margin-bottom:24px}
+footer{text-align:center;margin-top:30px;font-size:.75rem;color:var(--sub)}
+footer a{color:var(--blue);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="back" href="../index.html">← 教材ラボへ戻る</a>
+    <span style="font-size:.75rem;color:var(--sub)">情報Ⅰ</span>
+  </div>
+  <h1>❓ <span class="g">情報Ⅰ クイズアリーナ</span></h1>
+  <p class="lead">分野を選んで挑戦！ 連続正解でコンボボーナス。</p>
+  <div class="box" id="app"></div>
+  <footer><a href="../index.html">水野の教材ラボ</a> — 情報Ⅰ クイズアリーナ</footer>
+</div>
+
+<script>
+'use strict';
+const BANK = [
+  // ===== 情報社会 =====
+  { c:'情報社会', q:'著作物を著作者に無断で利用できる例外として正しいものは？',
+    o:['私的使用のための複製','SNSへの全文転載','友人への有料配布','動画サイトへの無断アップロード'], a:0,
+    e:'私的使用（個人や家庭内での利用）のための複製は著作権法で認められた例外。' },
+  { c:'情報社会', q:'個人情報にあたらないものはどれ？',
+    o:['統計処理され個人を特定できないデータ','氏名と住所の組','顔写真','マイナンバー'], a:0,
+    e:'個人情報は「特定の個人を識別できる情報」。匿名化された統計データは該当しない。' },
+  { c:'情報社会', q:'フィッシング詐欺の典型的な手口は？',
+    o:['偽サイトに誘導してIDやパスワードを入力させる','パソコンを物理的に盗む','電波を妨害する','大量のデータを送りつけてサーバを停止させる'], a:0,
+    e:'本物そっくりの偽サイトへ誘導して認証情報を盗むのがフィッシング。URLをよく確認しよう。' },
+  { c:'情報社会', q:'「情報格差」を表す言葉はどれ？',
+    o:['デジタルデバイド','デジタルネイティブ','デジタルタトゥー','デジタルトランスフォーメーション'], a:0,
+    e:'ICTを利用できる人とできない人の間に生じる格差をデジタルデバイドという。' },
+  { c:'情報社会', q:'クリエイティブ・コモンズ（CC）ライセンスの説明として正しいものは？',
+    o:['作者が利用条件を示して作品の再利用を促す仕組み','著作権を完全に放棄する制度','国が著作物を管理する制度','企業秘密を保護する制度'], a:0,
+    e:'CCライセンスは「表示」「非営利」などの条件つきで再利用を許可する意思表示の仕組み。' },
+  // ===== ネットワーク =====
+  { c:'ネットワーク', q:'Webページの住所にあたる「URL」の正式名称は？',
+    o:['Uniform Resource Locator','Universal Radio Link','United Resource Line','Unique Route Label'], a:0,
+    e:'URL = Uniform Resource Locator。ネット上の資源の場所を示す。' },
+  { c:'ネットワーク', q:'IPアドレスの役割として正しいものは？',
+    o:['ネットワーク上の機器を識別する番号','Webページのデザインを決める','パスワードを暗号化する','電波の強さを表す'], a:0,
+    e:'IPアドレスはネットワーク上の機器を一意に識別する番号。宛先・差出人の住所として働く。' },
+  { c:'ネットワーク', q:'ドメイン名をIPアドレスに変換する仕組みは？',
+    o:['DNS','HTTP','SMTP','SSL'], a:0,
+    e:'DNS（Domain Name System）が「名前→IPアドレス」の変換（名前解決）を行う。' },
+  { c:'ネットワーク', q:'httpsの「s」が意味するものは？',
+    o:['通信が暗号化されている','速度が速い','スマホ専用である','サーバが日本にある'], a:0,
+    e:'httpsはTLS/SSLで暗号化されたHTTP通信。盗聴や改ざんを防ぐ。' },
+  { c:'ネットワーク', q:'データを小さなまとまりに分割して送る通信方式は？',
+    o:['パケット交換方式','回線交換方式','衛星通信方式','モールス方式'], a:0,
+    e:'インターネットはデータをパケットに分割して送るパケット交換方式。回線を占有せず効率がよい。' },
+  // ===== データ =====
+  { c:'データ', q:'1バイトは何ビット？',
+    o:['8ビット','4ビット','16ビット','10ビット'], a:0,
+    e:'1バイト＝8ビット。8ビットで256通り（0〜255）を表せる。' },
+  { c:'データ', q:'2進数の 1010 を10進数にすると？',
+    o:['10','8','12','20'], a:0,
+    e:'1010(2) = 8 + 0 + 2 + 0 = 10。' },
+  { c:'データ', q:'アナログ情報をデジタル化する3ステップの正しい順序は？',
+    o:['標本化→量子化→符号化','符号化→標本化→量子化','量子化→符号化→標本化','標本化→符号化→量子化'], a:0,
+    e:'一定間隔で値を取り出し（標本化）、段階値に丸め（量子化）、2進数に変換（符号化）する。' },
+  { c:'データ', q:'光の三原色（RGB）の組み合わせとして正しいものは？',
+    o:['赤・緑・青','赤・黄・青','シアン・マゼンタ・イエロー','赤・白・黒'], a:0,
+    e:'光の三原色は Red・Green・Blue。混ぜるほど明るくなる加法混色。' },
+  { c:'データ', q:'可逆圧縮の説明として正しいものは？',
+    o:['圧縮しても元のデータに完全に戻せる','画質を犠牲にして小さくする','データの一部を削除する','必ず半分のサイズになる'], a:0,
+    e:'可逆圧縮（ZIPやPNGなど）は展開すれば完全に元へ戻る。JPEGは非可逆圧縮。' },
+  // ===== プログラミング =====
+  { c:'プログラミング', q:'Pythonで画面に文字を表示する命令は？',
+    o:['print()','echo()','show()','display()'], a:0,
+    e:'Pythonでは print("こんにちは") のように書く。' },
+  { c:'プログラミング', q:'処理を繰り返すための構文はどれ？',
+    o:['for文','if文','def文','import文'], a:0,
+    e:'for文（やwhile文）が繰り返し（反復）構造。if文は分岐、defは関数定義。' },
+  { c:'プログラミング', q:'x = 5 のあと x = x + 3 を実行すると x の値は？',
+    o:['8','5','3','53'], a:0,
+    e:'「=」は代入。右辺 5+3=8 が計算されて x に入り直す。' },
+  { c:'プログラミング', q:'アルゴリズムの3つの基本構造は？',
+    o:['順次・分岐・反復','入力・処理・出力','変数・関数・配列','設計・実装・テスト'], a:0,
+    e:'どんなプログラムも順次（上から順に）・分岐（if）・反復（ループ）の組み合わせで書ける。' },
+  { c:'プログラミング', q:'探索アルゴリズムのうち、整列済みデータで高速に探せるのは？',
+    o:['二分探索','線形探索','総当たり探索','ランダム探索'], a:0,
+    e:'二分探索は範囲を半分ずつ絞るため、1000件でも約10回の比較で見つかる。ただし整列済みが条件。' },
+];
+const CATS = [
+  { nm:'情報社会',      em:'🌐' },
+  { nm:'ネットワーク',  em:'📡' },
+  { nm:'データ',        em:'💾' },
+  { nm:'プログラミング', em:'⌨️' },
+];
+
+const app = document.getElementById('app');
+let quiz = [], idx = 0, score = 0, combo = 0, maxCombo = 0;
+
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function showStart() {
+  app.innerHTML = `
+    <div class="cat-grid">
+      ${CATS.map(c => {
+        const n = BANK.filter(b => b.c === c.nm).length;
+        return `<button class="cat" data-c="${c.nm}"><span class="em">${c.em}</span><span class="nm">${c.nm}</span><br><span class="ct">${n}問</span></button>`;
+      }).join('')}
+    </div>
+    <button class="all-btn" id="allStart">🔥 全分野ミックス（10問）に挑戦</button>`;
+  app.querySelectorAll('.cat').forEach(b => b.addEventListener('click', () => start(b.dataset.c)));
+  document.getElementById('allStart').addEventListener('click', () => start(null));
+}
+
+function start(cat) {
+  const pool = cat ? BANK.filter(b => b.c === cat) : [...BANK];
+  quiz = shuffle(pool).slice(0, cat ? pool.length : 10)
+    .map(q => {
+      // 選択肢もシャッフル
+      const order = shuffle([0, 1, 2, 3].slice(0, q.o.length));
+      return { ...q, o: order.map(i => q.o[i]), a: order.indexOf(q.a) };
+    });
+  idx = 0; score = 0; combo = 0; maxCombo = 0;
+  showQ();
+}
+
+function showQ() {
+  const q = quiz[idx];
+  app.innerHTML = `
+    <div class="hud">
+      <span>第 ${idx + 1} / ${quiz.length} 問</span>
+      <span>SCORE <b>${score}</b>　COMBO <b>${combo}</b>🔥</span>
+    </div>
+    <div class="bar"><i style="width:${idx / quiz.length * 100}%"></i></div>
+    <div class="q-cat">▶ ${q.c}</div>
+    <div class="q">${q.q}</div>
+    <div class="opts">
+      ${q.o.map((o, i) => `<button class="opt" data-i="${i}"><span class="k">${'ABCD'[i]}</span><span>${o}</span></button>`).join('')}
+    </div>
+    <div class="fb" id="fb"></div>
+    <button class="next-btn" id="next">${idx + 1 === quiz.length ? '結果を見る →' : '次の問題 →'}</button>`;
+  app.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => answer(+b.dataset.i)));
+}
+
+function answer(i) {
+  const q = quiz[idx];
+  const opts = app.querySelectorAll('.opt');
+  opts.forEach(b => b.disabled = true);
+  const fb = document.getElementById('fb');
+  if (i === q.a) {
+    combo++; maxCombo = Math.max(maxCombo, combo);
+    const gain = 100 + (combo - 1) * 20;
+    score += gain;
+    opts[i].classList.add('correct');
+    opts.forEach((b, j) => { if (j !== i) b.classList.add('dim'); });
+    fb.innerHTML = `<b class="yes">⭕ 正解！ +${gain}点${combo >= 2 ? `（${combo}コンボ！）` : ''}</b><br>${q.e}`;
+  } else {
+    combo = 0;
+    opts[i].classList.add('wrong');
+    opts[q.a].classList.add('correct');
+    opts.forEach((b, j) => { if (j !== i && j !== q.a) b.classList.add('dim'); });
+    fb.innerHTML = `<b class="no">❌ ざんねん…</b><br>${q.e}`;
+  }
+  const nx = document.getElementById('next');
+  nx.style.display = 'block';
+  nx.addEventListener('click', () => { idx++; idx < quiz.length ? showQ() : showResult(); });
+}
+
+function showResult() {
+  const [em, title] =
+    maxCombo === quiz.length ? ['🏆', 'パーフェクト！'] :
+    maxCombo >= 3 ? ['🎉', 'すばらしい！'] :
+    ['💪', 'おつかれさま！'];
+  app.innerHTML = `
+    <div class="res-em">${em}</div>
+    <div class="res-title">${title}</div>
+    <div class="res-score">${score}<span style="font-size:.4em;color:var(--sub)"> pt</span></div>
+    <div class="res-sub">最大コンボ：${maxCombo} 🔥</div>
+    <button class="all-btn" id="retry">もう一度挑戦する</button>`;
+  document.getElementById('retry').addEventListener('click', showStart);
+}
+
+showStart();
+</script>
+</body>
+</html>

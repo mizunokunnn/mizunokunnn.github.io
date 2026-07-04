@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>論理回路シミュレータ — 水野の教材ラボ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a0e1a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0e1a'/%3E%3Ctext x='32' y='44' font-size='30' text-anchor='middle' fill='%23a78bfa'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=JetBrains+Mono:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0e1a; --card:rgba(255,255,255,.05); --border:rgba(255,255,255,.1);
+  --text:#e8ecf4; --sub:#8a94ab;
+  --violet:#a78bfa; --green:#34d399; --amber:#fbbf24; --rose:#fb7185; --blue:#60a5fa;
+  --off:#2a3247;
+  --mono:'JetBrains Mono',Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  background:
+    radial-gradient(ellipse 60% 40% at 15% -10%, rgba(167,139,250,.14), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 95% 5%, rgba(96,165,250,.1), transparent 60%),
+    var(--bg);
+  color:var(--text); font-family:'Noto Sans JP',sans-serif;
+  min-height:100vh; padding:20px 16px 60px;
+}
+.wrap{max-width:760px;margin:0 auto}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.back{color:var(--sub);text-decoration:none;font-size:.85rem;font-weight:600}
+.back:hover{color:var(--text)}
+h1{font-size:clamp(1.3rem,4.5vw,1.7rem);font-weight:900;text-align:center;margin-bottom:6px}
+h1 .g{background:linear-gradient(90deg,var(--violet),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{text-align:center;color:var(--sub);font-size:.85rem;margin-bottom:24px}
+
+.box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:24px 20px;margin-bottom:18px}
+
+/* ゲート選択 */
+.gates{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:22px}
+.gate-btn{
+  padding:10px 22px;border-radius:12px;border:1px solid var(--border);
+  background:transparent;color:var(--sub);font-weight:800;font-family:var(--mono);
+  font-size:.95rem;cursor:pointer;transition:all .2s;
+}
+.gate-btn.on{color:#0a0e1a;background:var(--violet);border-color:var(--violet);box-shadow:0 0 18px rgba(167,139,250,.4)}
+
+/* 回路図 */
+svg{display:block;width:100%;height:auto}
+.wire{stroke:var(--off);stroke-width:4;fill:none;transition:stroke .2s}
+.wire.hot{stroke:var(--amber);filter:drop-shadow(0 0 5px rgba(251,191,36,.8))}
+.gate-body{fill:rgba(255,255,255,.06);stroke:rgba(255,255,255,.35);stroke-width:2.5}
+.gate-label{fill:var(--text);font-family:var(--mono);font-weight:800;font-size:20px;text-anchor:middle}
+.sw{cursor:pointer}
+.sw rect{fill:var(--off);stroke:rgba(255,255,255,.25);stroke-width:2;rx:10;transition:fill .2s}
+.sw.hot rect{fill:var(--amber)}
+.sw text{font-family:var(--mono);font-weight:800;font-size:22px;text-anchor:middle;fill:var(--text);pointer-events:none}
+.sw.hot text{fill:#0a0e1a}
+.lamp circle{fill:var(--off);stroke:rgba(255,255,255,.25);stroke-width:2.5;transition:all .2s}
+.lamp.hot circle{fill:var(--amber);filter:drop-shadow(0 0 14px rgba(251,191,36,.9))}
+.io-label{fill:var(--sub);font-size:12px;font-family:'Noto Sans JP',sans-serif;text-anchor:middle}
+
+/* 真理値表 */
+h2{font-size:1rem;font-weight:700;margin-bottom:14px;color:var(--text)}
+table{border-collapse:collapse;margin:0 auto;font-family:var(--mono);font-size:.95rem;width:100%;max-width:340px}
+td,th{border:1px solid var(--border);padding:9px 0;text-align:center}
+th{color:var(--violet);font-weight:600;font-size:.8rem}
+tr.now td{background:rgba(251,191,36,.14);color:var(--amber);font-weight:800}
+td.one{color:var(--green);font-weight:800}
+.desc{margin-top:16px;font-size:.85rem;color:var(--sub);line-height:1.8;text-align:center;min-height:3.2em}
+.desc b{color:var(--violet)}
+footer{text-align:center;margin-top:30px;font-size:.75rem;color:var(--sub)}
+footer a{color:var(--blue);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="back" href="../index.html">← 教材ラボへ戻る</a>
+    <span style="font-size:.75rem;color:var(--sub)">情報Ⅰ</span>
+  </div>
+  <h1>⚡ <span class="g">論理回路シミュレータ</span></h1>
+  <p class="lead">スイッチをタップして入力を切り替え、出力ランプの変化を確かめよう。</p>
+
+  <div class="box">
+    <div class="gates">
+      <button class="gate-btn on" data-g="AND">AND</button>
+      <button class="gate-btn" data-g="OR">OR</button>
+      <button class="gate-btn" data-g="NOT">NOT</button>
+      <button class="gate-btn" data-g="XOR">XOR</button>
+      <button class="gate-btn" data-g="NAND">NAND</button>
+    </div>
+
+    <svg id="cv" viewBox="0 0 560 240" aria-label="論理回路図">
+      <!-- 配線 -->
+      <path id="wA" class="wire" d="M96 80 H200"/>
+      <path id="wB" class="wire" d="M96 160 H200"/>
+      <path id="wO" class="wire" d="M360 120 H452"/>
+      <!-- スイッチA -->
+      <g id="swA" class="sw">
+        <rect x="36" y="55" width="60" height="50" rx="10"/>
+        <text x="66" y="88">0</text>
+      </g>
+      <text class="io-label" x="66" y="42">入力 A</text>
+      <!-- スイッチB -->
+      <g id="swB" class="sw">
+        <rect x="36" y="135" width="60" height="50" rx="10"/>
+        <text x="66" y="168">0</text>
+      </g>
+      <text class="io-label" id="lblB" x="66" y="122">入力 B</text>
+      <!-- ゲート -->
+      <g id="gateG">
+        <rect class="gate-body" x="200" y="60" width="160" height="120" rx="18"/>
+        <text class="gate-label" id="gateName" x="280" y="128">AND</text>
+      </g>
+      <!-- ランプ -->
+      <g id="lamp" class="lamp">
+        <circle cx="486" cy="120" r="34"/>
+        <text class="io-label" x="486" y="186">出力 Y</text>
+      </g>
+    </svg>
+
+    <div class="desc" id="desc"></div>
+  </div>
+
+  <div class="box">
+    <h2>📋 真理値表（今の入力がハイライトされる）</h2>
+    <table id="tt"></table>
+  </div>
+
+  <footer><a href="../index.html">水野の教材ラボ</a> — 論理回路シミュレータ</footer>
+</div>
+
+<script>
+'use strict';
+const GATES = {
+  AND:  { fn:(a,b)=>a&b,      two:true,  desc:'<b>AND（論理積）</b>：AとBの<b>両方が1</b>のときだけ出力が1になる。「かつ」の回路。' },
+  OR:   { fn:(a,b)=>a|b,      two:true,  desc:'<b>OR（論理和）</b>：AとBの<b>どちらか一方でも1</b>なら出力が1になる。「または」の回路。' },
+  NOT:  { fn:(a,_)=>a^1,      two:false, desc:'<b>NOT（否定）</b>：入力を<b>反転</b>する。0なら1、1なら0。インバータとも呼ばれる。' },
+  XOR:  { fn:(a,b)=>a^b,      two:true,  desc:'<b>XOR（排他的論理和）</b>：AとBが<b>異なるとき</b>だけ出力が1。加算回路の材料になる重要ゲート。' },
+  NAND: { fn:(a,b)=>(a&b)^1,  two:true,  desc:'<b>NAND（否定論理積）</b>：ANDの出力を反転したもの。<b>NANDだけで全ての回路が作れる</b>万能ゲート。' },
+};
+let g = 'AND', A = 0, B = 0;
+
+const $ = id => document.getElementById(id);
+
+document.querySelectorAll('.gate-btn').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.gate-btn').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  g = b.dataset.g;
+  render();
+}));
+$('swA').addEventListener('pointerdown', () => { A ^= 1; render(); });
+$('swB').addEventListener('pointerdown', () => { if (GATES[g].two) { B ^= 1; render(); } });
+
+function render() {
+  const spec = GATES[g];
+  const out = spec.fn(A, B);
+  $('gateName').textContent = g;
+  $('desc').innerHTML = spec.desc;
+  // スイッチ・配線・ランプ
+  $('swA').classList.toggle('hot', A === 1);
+  $('swA').querySelector('text').textContent = A;
+  const swB = $('swB'), wB = $('wB');
+  swB.style.opacity = spec.two ? 1 : .18;
+  wB.style.opacity = spec.two ? 1 : .18;
+  $('lblB').style.opacity = spec.two ? 1 : .18;
+  swB.classList.toggle('hot', spec.two && B === 1);
+  swB.querySelector('text').textContent = B;
+  $('wA').classList.toggle('hot', A === 1);
+  wB.classList.toggle('hot', spec.two && B === 1);
+  $('wO').classList.toggle('hot', out === 1);
+  $('lamp').classList.toggle('hot', out === 1);
+  // 真理値表
+  const tt = $('tt');
+  if (spec.two) {
+    let html = '<tr><th>A</th><th>B</th><th>Y</th></tr>';
+    for (const [a, b] of [[0,0],[0,1],[1,0],[1,1]]) {
+      const y = spec.fn(a, b);
+      const now = (a === A && b === B) ? ' class="now"' : '';
+      html += `<tr${now}><td>${a}</td><td>${b}</td><td class="${y ? 'one' : ''}">${y}</td></tr>`;
+    }
+    tt.innerHTML = html;
+  } else {
+    let html = '<tr><th>A</th><th>Y</th></tr>';
+    for (const a of [0, 1]) {
+      const y = spec.fn(a, 0);
+      const now = (a === A) ? ' class="now"' : '';
+      html += `<tr${now}><td>${a}</td><td class="${y ? 'one' : ''}">${y}</td></tr>`;
+    }
+    tt.innerHTML = html;
+  }
+}
+render();
+</script>
+</body>
+</html>

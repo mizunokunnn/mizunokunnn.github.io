@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>2進数トレーナー — 水野の教材ラボ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a0e1a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0e1a'/%3E%3Ctext x='32' y='42' font-size='26' text-anchor='middle' fill='%2334d399' font-family='monospace' font-weight='bold'%3E01%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;800&family=Noto+Sans+JP:wght@400;700;900&family=JetBrains+Mono:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0e1a; --card:rgba(255,255,255,.05); --border:rgba(255,255,255,.1);
+  --text:#e8ecf4; --sub:#8a94ab;
+  --green:#34d399; --blue:#60a5fa; --amber:#fbbf24; --rose:#fb7185; --violet:#a78bfa;
+  --mono:'JetBrains Mono',Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  background:
+    radial-gradient(ellipse 60% 40% at 20% -10%, rgba(52,211,153,.12), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 90% 0%, rgba(96,165,250,.1), transparent 60%),
+    var(--bg);
+  color:var(--text);
+  font-family:'Noto Sans JP',sans-serif;
+  min-height:100vh; padding:20px 16px 60px;
+}
+.wrap{max-width:720px;margin:0 auto}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.back{color:var(--sub);text-decoration:none;font-size:.85rem;font-weight:600}
+.back:hover{color:var(--text)}
+h1{font-size:clamp(1.3rem,4.5vw,1.7rem);font-weight:900;text-align:center;margin-bottom:6px}
+h1 .g{background:linear-gradient(90deg,var(--green),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{text-align:center;color:var(--sub);font-size:.85rem;margin-bottom:24px}
+
+/* タブ */
+.tabs{display:flex;gap:8px;margin-bottom:20px;justify-content:center;flex-wrap:wrap}
+.tab{
+  padding:9px 20px;border-radius:12px;border:1px solid var(--border);
+  background:var(--card);color:var(--sub);font-weight:700;font-size:.88rem;
+  cursor:pointer;transition:all .2s;font-family:inherit;
+}
+.tab.on{color:#0a0e1a;background:linear-gradient(90deg,var(--green),var(--blue));border-color:transparent}
+.panel{display:none}
+.panel.on{display:block;animation:fade .3s}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.box{
+  background:var(--card);border:1px solid var(--border);border-radius:20px;
+  padding:26px 22px;margin-bottom:18px;
+}
+
+/* ===== ビットパネル ===== */
+.dec-display{
+  text-align:center;font-family:var(--mono);font-size:clamp(2.4rem,9vw,3.6rem);
+  font-weight:800;margin-bottom:4px;color:var(--green);
+}
+.dec-label{text-align:center;color:var(--sub);font-size:.78rem;margin-bottom:22px}
+.bits{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.bit{
+  display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;user-select:none;
+}
+.bit .val{font-size:.68rem;color:var(--sub);font-family:var(--mono)}
+.bit .sq{
+  width:clamp(34px,10vw,52px);height:clamp(44px,13vw,66px);border-radius:12px;
+  border:2px solid var(--border);background:rgba(255,255,255,.03);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:clamp(1.2rem,4.5vw,1.7rem);font-weight:800;color:var(--sub);
+  transition:all .15s;
+}
+.bit.on .sq{
+  color:#0a0e1a;background:var(--green);border-color:var(--green);
+  box-shadow:0 0 18px rgba(52,211,153,.45);transform:translateY(-3px);
+}
+.hexrow{
+  margin-top:20px;text-align:center;font-family:var(--mono);font-size:1rem;color:var(--sub);
+}
+.hexrow b{color:var(--blue);font-size:1.2rem}
+
+/* ===== ドリル ===== */
+.q-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;font-size:.82rem;color:var(--sub)}
+.q-meta .score{font-family:var(--mono);font-weight:800;color:var(--amber);font-size:1rem}
+.q-body{text-align:center;margin-bottom:20px}
+.q-text{font-size:.9rem;color:var(--sub);margin-bottom:10px}
+.q-num{font-family:var(--mono);font-size:clamp(2rem,8vw,3rem);font-weight:800}
+.q-num .base{font-size:.45em;color:var(--sub);vertical-align:sub}
+.answer-row{display:flex;gap:10px;max-width:420px;margin:0 auto}
+input[type=text]{
+  flex:1;min-width:0;padding:13px 16px;border-radius:12px;border:1px solid var(--border);
+  background:rgba(0,0,0,.3);color:var(--text);font-family:var(--mono);
+  font-size:1.15rem;font-weight:700;text-align:center;outline:none;
+}
+input[type=text]:focus{border-color:var(--green)}
+.btn{
+  padding:13px 26px;border-radius:12px;border:none;cursor:pointer;
+  font-weight:800;font-size:.95rem;font-family:inherit;transition:transform .15s;
+}
+.btn:active{transform:scale(.96)}
+.btn-go{color:#0a0e1a;background:linear-gradient(90deg,var(--green),var(--blue))}
+.btn-sub{background:var(--card);border:1px solid var(--border);color:var(--sub)}
+.result{
+  min-height:54px;margin-top:16px;text-align:center;font-weight:900;font-size:1.05rem;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+}
+.result .exp{font-size:.78rem;color:var(--sub);font-weight:400;font-family:var(--mono)}
+.ok{color:var(--green)} .ng{color:var(--rose)}
+.streak{
+  display:inline-block;margin-left:8px;color:var(--amber);font-family:var(--mono);font-weight:800;
+}
+.mode-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:18px}
+.mode{
+  padding:7px 14px;border-radius:999px;font-size:.76rem;font-weight:700;cursor:pointer;
+  border:1px solid var(--border);background:transparent;color:var(--sub);font-family:inherit;transition:all .2s;
+}
+.mode.on{color:var(--violet);border-color:var(--violet);background:rgba(167,139,250,.1)}
+
+/* 位取り表 */
+.hint{margin-top:18px;overflow-x:auto}
+.hint table{border-collapse:collapse;margin:0 auto;font-family:var(--mono);font-size:.8rem}
+.hint td,.hint th{border:1px solid var(--border);padding:6px 12px;text-align:center;color:var(--sub)}
+.hint th{color:var(--blue);font-weight:600}
+footer{text-align:center;margin-top:30px;font-size:.75rem;color:var(--sub)}
+footer a{color:var(--blue);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="back" href="../index.html">← 教材ラボへ戻る</a>
+    <span style="font-size:.75rem;color:var(--sub)">情報Ⅰ</span>
+  </div>
+  <h1>🔢 <span class="g">2進数トレーナー</span></h1>
+  <p class="lead">ビットをさわって感覚をつかむ → ドリルで定着。</p>
+
+  <div class="tabs">
+    <button class="tab on" data-p="panel-bits">🎛 ビットパネル</button>
+    <button class="tab" data-p="panel-drill">✏️ 変換ドリル</button>
+  </div>
+
+  <!-- ビットパネル -->
+  <div class="panel on" id="panel-bits">
+    <div class="box">
+      <div class="dec-display" id="decOut">0</div>
+      <div class="dec-label">10進数（ビットをタップ！）</div>
+      <div class="bits" id="bitRow"></div>
+      <div class="hexrow">2進数: <b id="binOut">00000000</b>　16進数: <b id="hexOut">00</b></div>
+    </div>
+    <div class="box">
+      <div style="font-size:.85rem;color:var(--sub);margin-bottom:10px">💡 各ビットの「重み」は右から 1, 2, 4, 8… と2倍ずつ増えていく。点いているビットの重みを全部足すと10進数になる。</div>
+      <div class="hint">
+        <table>
+          <tr><th>位</th><th>2⁷</th><th>2⁶</th><th>2⁵</th><th>2⁴</th><th>2³</th><th>2²</th><th>2¹</th><th>2⁰</th></tr>
+          <tr><td>重み</td><td>128</td><td>64</td><td>32</td><td>16</td><td>8</td><td>4</td><td>2</td><td>1</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ドリル -->
+  <div class="panel" id="panel-drill">
+    <div class="box">
+      <div class="mode-row">
+        <button class="mode on" data-m="b2d">2進→10進</button>
+        <button class="mode" data-m="d2b">10進→2進</button>
+        <button class="mode" data-m="h2d">16進→10進</button>
+        <button class="mode" data-m="d2h">10進→16進</button>
+      </div>
+      <div class="q-meta">
+        <span>正解数 <span class="score" id="score">0</span></span>
+        <span>連続正解 <span class="streak" id="streak">0</span>🔥</span>
+      </div>
+      <div class="q-body">
+        <div class="q-text" id="qText"></div>
+        <div class="q-num" id="qNum"></div>
+      </div>
+      <div class="answer-row">
+        <input type="text" id="ans" autocomplete="off" inputmode="text" placeholder="答えを入力">
+        <button class="btn btn-go" id="check">判定</button>
+      </div>
+      <div class="result" id="result"></div>
+      <div style="text-align:center"><button class="btn btn-sub" id="skip">スキップ →</button></div>
+    </div>
+  </div>
+
+  <footer><a href="../index.html">水野の教材ラボ</a> — 2進数トレーナー</footer>
+</div>
+
+<script>
+'use strict';
+// ===== タブ切替 =====
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(x => x.classList.remove('on'));
+  t.classList.add('on');
+  document.getElementById(t.dataset.p).classList.add('on');
+}));
+
+// ===== ビットパネル =====
+const N = 8;
+let bits = new Array(N).fill(0);
+const bitRow = document.getElementById('bitRow');
+for (let i = N - 1; i >= 0; i--) {
+  const d = document.createElement('div');
+  d.className = 'bit';
+  d.innerHTML = `<span class="val">${2**i}</span><div class="sq">0</div>`;
+  d.addEventListener('pointerdown', () => {
+    bits[i] ^= 1;
+    d.classList.toggle('on', bits[i] === 1);
+    d.querySelector('.sq').textContent = bits[i];
+    renderBits();
+  });
+  bitRow.appendChild(d);
+}
+function renderBits() {
+  const v = bits.reduce((a, b, i) => a + b * 2**i, 0);
+  document.getElementById('decOut').textContent = v;
+  document.getElementById('binOut').textContent = v.toString(2).padStart(8, '0');
+  document.getElementById('hexOut').textContent = v.toString(16).toUpperCase().padStart(2, '0');
+}
+renderBits();
+
+// ===== ドリル =====
+let mode = 'b2d', cur = 0, score = 0, streak = 0;
+const qText = document.getElementById('qText'), qNum = document.getElementById('qNum'),
+      ans = document.getElementById('ans'), result = document.getElementById('result');
+
+document.querySelectorAll('.mode').forEach(m => m.addEventListener('click', () => {
+  document.querySelectorAll('.mode').forEach(x => x.classList.remove('on'));
+  m.classList.add('on');
+  mode = m.dataset.m;
+  streak = 0; updateMeta(); next();
+}));
+
+function next() {
+  // 連続正解が増えるほど大きい数が出る
+  const max = Math.min(255, 15 + streak * 25);
+  cur = 1 + Math.floor(Math.random() * max);
+  const conf = {
+    b2d: ['この2進数を10進数に：', cur.toString(2), '2'],
+    d2b: ['この10進数を2進数に：', String(cur), '10'],
+    h2d: ['この16進数を10進数に：', cur.toString(16).toUpperCase(), '16'],
+    d2h: ['この10進数を16進数に：', String(cur), '10'],
+  }[mode];
+  qText.textContent = conf[0];
+  qNum.innerHTML = `${conf[1]}<span class="base">(${conf[2]})</span>`;
+  ans.value = ''; result.innerHTML = '';
+  ans.focus();
+}
+function expected() {
+  return { b2d: String(cur), d2b: cur.toString(2), h2d: String(cur), d2h: cur.toString(16).toUpperCase() }[mode];
+}
+function updateMeta() {
+  document.getElementById('score').textContent = score;
+  document.getElementById('streak').textContent = streak;
+}
+function check() {
+  const raw = ans.value.trim().toUpperCase().replace(/^0+(?=.)/, '');
+  if (!raw) return;
+  const exp = expected();
+  if (raw === exp) {
+    score++; streak++;
+    result.innerHTML = `<span class="ok">⭕ 正解！</span><span class="exp">${cur.toString(2)}(2) = ${cur}(10) = ${cur.toString(16).toUpperCase()}(16)</span>`;
+    updateMeta();
+    setTimeout(next, 1100);
+  } else {
+    streak = 0; updateMeta();
+    result.innerHTML = `<span class="ng">❌ ざんねん… 正解は <b>${exp}</b></span><span class="exp">${cur.toString(2)}(2) = ${cur}(10) = ${cur.toString(16).toUpperCase()}(16)</span>`;
+  }
+}
+document.getElementById('check').addEventListener('click', check);
+ans.addEventListener('keydown', e => { if (e.key === 'Enter') check(); });
+document.getElementById('skip').addEventListener('click', () => { streak = 0; updateMeta(); next(); });
+next();
+</script>
+</body>
+</html>

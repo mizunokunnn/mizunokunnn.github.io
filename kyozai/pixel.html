@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>画像のデジタル化ラボ — 水野の教材ラボ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a0e1a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0e1a'/%3E%3Ctext x='32' y='44' font-size='30' text-anchor='middle' fill='%23fbbf24'%3E%F0%9F%8E%A8%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=JetBrains+Mono:wght@500;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0e1a; --card:rgba(255,255,255,.05); --border:rgba(255,255,255,.1);
+  --text:#e8ecf4; --sub:#8a94ab;
+  --amber:#fbbf24; --green:#34d399; --blue:#60a5fa; --rose:#fb7185; --violet:#a78bfa;
+  --mono:'JetBrains Mono',Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  background:
+    radial-gradient(ellipse 60% 40% at 20% -10%, rgba(251,191,36,.1), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 90% 0%, rgba(251,113,133,.09), transparent 60%),
+    var(--bg);
+  color:var(--text); font-family:'Noto Sans JP',sans-serif;
+  min-height:100vh; padding:20px 16px 60px;
+}
+.wrap{max-width:860px;margin:0 auto}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.back{color:var(--sub);text-decoration:none;font-size:.85rem;font-weight:600}
+.back:hover{color:var(--text)}
+h1{font-size:clamp(1.3rem,4.5vw,1.7rem);font-weight:900;text-align:center;margin-bottom:6px}
+h1 .g{background:linear-gradient(90deg,var(--amber),var(--rose));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{text-align:center;color:var(--sub);font-size:.85rem;margin-bottom:24px}
+
+.cols{display:grid;grid-template-columns:1fr;gap:18px}
+@media(min-width:760px){.cols{grid-template-columns:1fr 1fr}}
+.box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:22px 20px}
+.box h2{font-size:.95rem;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+/* コントロール */
+.ctrl{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;justify-content:center}
+.cbtn{
+  padding:8px 16px;border-radius:10px;border:1px solid var(--border);
+  background:transparent;color:var(--sub);font-weight:700;font-size:.8rem;
+  cursor:pointer;font-family:inherit;transition:all .2s;
+}
+.cbtn.on{color:#0a0e1a;background:var(--amber);border-color:var(--amber)}
+.cbtn.danger:hover{color:var(--rose);border-color:var(--rose)}
+
+/* キャンバス */
+#grid{
+  display:grid;gap:2px;margin:0 auto;
+  background:rgba(255,255,255,.08);border:2px solid var(--border);border-radius:10px;
+  padding:2px;touch-action:none;user-select:none;
+  width:100%;max-width:420px;aspect-ratio:1;
+}
+.cell{border-radius:2px;background:#0d1224;transition:background .08s}
+
+/* ビット列 */
+#bitsOut{
+  font-family:var(--mono);font-size:clamp(.72rem,2.1vw,.85rem);line-height:1.9;
+  word-break:break-all;letter-spacing:.06em;
+  background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:12px;
+  padding:14px;min-height:150px;max-height:300px;overflow-y:auto;
+}
+#bitsOut .b1{color:var(--amber);font-weight:800}
+#bitsOut .b0{color:#3d4763}
+#bitsOut .g1{color:var(--green)} #bitsOut .g2{color:var(--blue)}
+.stats{
+  display:flex;gap:14px;margin-top:12px;flex-wrap:wrap;justify-content:center;
+  font-size:.78rem;color:var(--sub);
+}
+.stats b{color:var(--amber);font-family:var(--mono);font-size:.95rem}
+.note{margin-top:14px;font-size:.8rem;color:var(--sub);line-height:1.8}
+.note b{color:var(--amber)}
+footer{text-align:center;margin-top:30px;font-size:.75rem;color:var(--sub)}
+footer a{color:var(--blue);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="back" href="../index.html">← 教材ラボへ戻る</a>
+    <span style="font-size:.75rem;color:var(--sub)">情報Ⅰ</span>
+  </div>
+  <h1>🎨 <span class="g">画像のデジタル化ラボ</span></h1>
+  <p class="lead">左でドット絵を描くと、右にその画像の「正体」＝ビット列がリアルタイムで現れる。</p>
+
+  <div class="cols">
+    <div class="box">
+      <h2>🖌 ドット絵キャンバス（ドラッグで描ける）</h2>
+      <div class="ctrl">
+        <button class="cbtn on" data-size="8">8×8</button>
+        <button class="cbtn" data-size="16">16×16</button>
+        <span style="width:10px"></span>
+        <button class="cbtn on" data-depth="1">白黒(1bit)</button>
+        <button class="cbtn" data-depth="2">4階調(2bit)</button>
+        <span style="width:10px"></span>
+        <button class="cbtn danger" id="clear">全消去</button>
+      </div>
+      <div id="grid"></div>
+      <p class="note" id="paletteNote">タップ/ドラッグでドットのON・OFFを切り替え。</p>
+    </div>
+
+    <div class="box">
+      <h2>💾 このドット絵のデータ（ビット列）</h2>
+      <div id="bitsOut"></div>
+      <div class="stats">
+        <span>解像度 <b id="stRes">8×8</b></span>
+        <span>階調 <b id="stDepth">1bit</b></span>
+        <span>データ量 <b id="stBits">64</b> ビット = <b id="stBytes">8</b> バイト</span>
+      </div>
+      <p class="note">💡 <b>解像度を上げる</b>とドットが細かくなる代わりにデータ量が増える。<b>階調を増やす</b>と1ドットあたりのビット数が増える。「きれいさ」と「データ量」はトレードオフ！</p>
+    </div>
+  </div>
+
+  <footer><a href="../index.html">水野の教材ラボ</a> — 画像のデジタル化ラボ</footer>
+</div>
+
+<script>
+'use strict';
+let SIZE = 8, DEPTH = 1;           // DEPTH: 1bit(2値) or 2bit(4階調)
+let data = [];
+const grid = document.getElementById('grid');
+const SHADES = { 1: ['#0d1224', '#fbbf24'], 2: ['#0d1224', '#5b4a12', '#b08a1d', '#fbbf24'] };
+
+function init(keep) {
+  const old = keep ? data : null;
+  data = new Array(SIZE * SIZE).fill(0);
+  if (old) { // サイズ変更時はできる範囲でコピー
+    const oldSize = Math.sqrt(old.length);
+    for (let y = 0; y < Math.min(SIZE, oldSize); y++)
+      for (let x = 0; x < Math.min(SIZE, oldSize); x++)
+        data[y * SIZE + x] = Math.min(old[y * oldSize + x], (1 << DEPTH) - 1);
+  }
+  grid.style.gridTemplateColumns = `repeat(${SIZE},1fr)`;
+  grid.innerHTML = '';
+  for (let i = 0; i < SIZE * SIZE; i++) {
+    const c = document.createElement('div');
+    c.className = 'cell';
+    c.dataset.i = i;
+    grid.appendChild(c);
+  }
+  render();
+}
+
+function render() {
+  const shades = SHADES[DEPTH];
+  grid.querySelectorAll('.cell').forEach((c, i) => { c.style.background = shades[data[i]]; });
+  // ビット列
+  const maxV = (1 << DEPTH) - 1;
+  let html = '';
+  for (let y = 0; y < SIZE; y++) {
+    for (let x = 0; x < SIZE; x++) {
+      const v = data[y * SIZE + x];
+      const bits = v.toString(2).padStart(DEPTH, '0');
+      const cls = v === 0 ? 'b0' : (v === maxV ? 'b1' : (v === 1 ? 'g1' : 'g2'));
+      html += `<span class="${cls}">${bits}</span>`;
+    }
+    html += '<br>';
+  }
+  document.getElementById('bitsOut').innerHTML = html;
+  const totalBits = SIZE * SIZE * DEPTH;
+  document.getElementById('stRes').textContent = `${SIZE}×${SIZE}`;
+  document.getElementById('stDepth').textContent = `${DEPTH}bit`;
+  document.getElementById('stBits').textContent = totalBits;
+  document.getElementById('stBytes').textContent = (totalBits / 8).toLocaleString();
+}
+
+// 描画（ポインタドラッグ）
+let painting = false, paintVal = null;
+function cellAt(e) {
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  return (el && el.classList.contains('cell')) ? el : null;
+}
+grid.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  const c = cellAt(e); if (!c) return;
+  painting = true;
+  const i = +c.dataset.i;
+  const maxV = (1 << DEPTH) - 1;
+  paintVal = (data[i] + 1) % (maxV + 1);   // タップで階調を1段進める
+  data[i] = paintVal;
+  render();
+});
+window.addEventListener('pointermove', e => {
+  if (!painting) return;
+  const c = cellAt(e); if (!c) return;
+  data[+c.dataset.i] = paintVal;
+  render();
+});
+window.addEventListener('pointerup', () => { painting = false; });
+
+// コントロール
+document.querySelectorAll('[data-size]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-size]').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  SIZE = +b.dataset.size;
+  init(true);
+}));
+document.querySelectorAll('[data-depth]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-depth]').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  DEPTH = +b.dataset.depth;
+  data = data.map(v => Math.min(v, (1 << DEPTH) - 1));
+  document.getElementById('paletteNote').textContent = DEPTH === 1
+    ? 'タップ/ドラッグでドットのON・OFFを切り替え。'
+    : 'タップするたびに 黒→暗→中→明 と階調が1段ずつ進む。';
+  render();
+}));
+document.getElementById('clear').addEventListener('click', () => { data.fill(0); render(); });
+
+init(false);
+</script>
+</body>
+</html>
