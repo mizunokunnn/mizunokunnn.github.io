@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pyタイピング 〜回転コード寿司〜</title>
+<style>
+  :root{
+    --bg:#efece5;
+    --paper:#f7f5f0;
+    --ink:#1d1c19;
+    --sub:#7a766d;
+    --line:#d6d2c7;
+    --plate:#ffffff;
+    --accent:#b23a2e;       /* 朱：差し色はこれ1色だけ */
+    --done:#bdb9ae;         /* 入力済みの文字 */
+    --belt:#e3dfd5;
+    --font-ui:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic","YuGothic","Meiryo",sans-serif;
+    --font-code:"SF Mono","Consolas","Menlo","Courier New",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-ui);
+    -webkit-font-smoothing:antialiased;
+    display:flex;justify-content:center;align-items:flex-start;
+    padding:16px;
+    min-height:100vh;
+  }
+  .app{
+    width:100%;max-width:920px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:14px;
+    overflow:hidden;
+    display:flex;flex-direction:column;
+  }
+  /* 暖簾風ヘッダー（控えめ） */
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 22px;
+    border-bottom:1px solid var(--line);
+    background:var(--plate);
+  }
+  .brand{display:flex;align-items:baseline;gap:10px;}
+  .brand .mark{
+    font-size:18px;font-weight:700;letter-spacing:.02em;
+  }
+  .brand .mark b{color:var(--accent);}
+  .brand .sub{font-size:11px;color:var(--sub);}
+  .hud{display:flex;gap:26px;align-items:center;}
+  .hud .item{text-align:right;line-height:1.1;}
+  .hud .item .k{font-size:10px;color:var(--sub);letter-spacing:.08em;}
+  .hud .item .v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .hud .v.time.warn{color:var(--accent);}
+
+  main{flex:1;display:flex;flex-direction:column;}
+
+  /* ============ 画面共通 ============ */
+  .screen{display:none;flex-direction:column;}
+  .screen.active{display:flex;}
+
+  /* ============ タイトル ============ */
+  #title{padding:30px 26px 26px;align-items:center;justify-content:flex-start;text-align:center;}
+  #title h1{font-size:30px;letter-spacing:.02em;margin-bottom:6px;}
+  #title h1 b{color:var(--accent);}
+  #title .lead{color:var(--sub);font-size:13px;line-height:1.7;max-width:560px;margin:0 auto 22px;}
+  .panel{
+    width:100%;max-width:560px;
+    background:var(--plate);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:20px 22px;
+    text-align:left;
+    margin-bottom:16px;
+  }
+  .field{margin-bottom:18px;}
+  .field:last-child{margin-bottom:0;}
+  .field .label{font-size:12px;color:var(--sub);margin-bottom:8px;letter-spacing:.04em;}
+  .field input[type=text]{
+    width:100%;padding:10px 12px;font-size:15px;font-family:var(--font-ui);
+    border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);
+  }
+  .field input[type=text]:focus{outline:none;border-color:var(--accent);}
+  .opts{display:flex;gap:8px;flex-wrap:wrap;}
+  .opt{
+    flex:1;min-width:90px;
+    padding:11px 8px;border:1px solid var(--line);border-radius:7px;
+    background:var(--bg);cursor:pointer;text-align:center;
+    font-size:13px;transition:.12s;user-select:none;
+  }
+  .opt .t{font-weight:700;font-size:14px;}
+  .opt .d{font-size:11px;color:var(--sub);margin-top:3px;}
+  .opt:hover{border-color:var(--sub);}
+  .opt.sel{border-color:var(--accent);background:#fff;box-shadow:inset 0 0 0 1px var(--accent);}
+  .opt.sel .t{color:var(--accent);}
+  .toggle-row{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;}
+  .toggle{
+    width:42px;height:24px;border-radius:12px;background:var(--line);position:relative;transition:.15s;flex:none;
+  }
+  .toggle::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.15s;box-shadow:0 1px 2px rgba(0,0,0,.2);}
+  .toggle.on{background:var(--accent);}
+  .toggle.on::after{left:21px;}
+
+  .btn{
+    display:inline-block;border:none;cursor:pointer;font-family:var(--font-ui);
+    background:var(--ink);color:#fff;font-size:15px;font-weight:700;
+    padding:13px 34px;border-radius:8px;letter-spacing:.04em;transition:.12s;
+  }
+  .btn:hover{background:var(--accent);}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);font-weight:600;}
+  .btn.ghost:hover{background:var(--bg);color:var(--ink);border-color:var(--sub);}
+  .btn-row{display:flex;gap:12px;justify-content:center;}
+
+  /* ============ ゲーム ============ */
+  #game{padding:0;}
+  .belt-wrap{position:relative;height:200px;overflow:hidden;background:var(--paper);}
+  .belt{
+    position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);
+    height:96px;background:var(--belt);
+    border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  }
+  .belt::before,.belt::after{content:"";position:absolute;left:0;right:0;height:1px;background:rgba(0,0,0,.04);}
+  .belt::before{top:32px;}.belt::after{bottom:32px;}
+  .catch-line{
+    position:absolute;left:64px;top:50%;transform:translateY(-50%);
+    width:2px;height:120px;background:var(--accent);opacity:.55;
+  }
+  .catch-line .label{
+    position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);
+    font-size:10px;color:var(--accent);white-space:nowrap;letter-spacing:.06em;
+  }
+  .plate{
+    position:absolute;top:50%;transform:translate(-50%,-50%);
+    width:118px;text-align:center;will-change:left;
+  }
+  .plate .dish{
+    width:118px;height:30px;border-radius:50%;background:var(--plate);
+    border:1px solid var(--line);box-shadow:0 2px 0 rgba(0,0,0,.04);
+    margin:0 auto;position:relative;top:30px;z-index:1;
+  }
+  .plate .card{
+    position:relative;z-index:2;
+    background:var(--plate);border:1px solid var(--line);border-radius:6px;
+    padding:7px 6px;font-family:var(--font-code);font-size:14px;
+    white-space:nowrap;display:inline-block;min-width:70px;
+    box-shadow:0 1px 2px rgba(0,0,0,.05);
+  }
+  .plate.active .card{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);}
+  .plate.caught{animation:caught .3s ease forwards;}
+  @keyframes caught{to{transform:translate(-50%,-150%);opacity:0;}}
+  .plate.missed .card{opacity:.4;text-decoration:line-through;}
+
+  /* 入力中の大きい表示 */
+  .typing-box{
+    background:var(--plate);border-top:1px solid var(--line);
+    padding:18px 20px 14px;text-align:center;
+  }
+  .target{font-family:var(--font-code);font-size:34px;letter-spacing:.01em;line-height:1.3;word-break:break-all;min-height:46px;}
+  .target .c{position:relative;}
+  .target .c.done{color:var(--done);}
+  .target .c.cur{color:var(--accent);border-bottom:3px solid var(--accent);}
+  .target .c.todo{color:var(--ink);}
+  .target .c.space{display:inline-block;min-width:.5em;}
+  .hint{margin-top:8px;font-size:12px;color:var(--sub);min-height:18px;}
+  .hint.zenkaku{color:var(--accent);font-weight:700;}
+  .combo{position:absolute;right:22px;top:14px;font-size:13px;color:var(--sub);}
+  .combo b{color:var(--accent);font-size:20px;font-variant-numeric:tabular-nums;}
+
+  /* ============ オンスクリーンキーボード（JIS） ============ */
+  .keyboard{
+    background:var(--bg);border-top:1px solid var(--line);
+    padding:12px 14px 14px;user-select:none;
+  }
+  .kbrow{display:flex;gap:5px;justify-content:center;margin-bottom:5px;}
+  .key{
+    flex:0 0 auto;width:38px;height:40px;border:1px solid var(--line);border-radius:6px;
+    background:var(--plate);display:flex;flex-direction:column;align-items:center;justify-content:center;
+    font-family:var(--font-code);font-size:12px;color:var(--sub);position:relative;line-height:1.05;
+  }
+  .key .top{font-size:9px;opacity:.7;}
+  .key .bot{font-size:13px;color:var(--ink);}
+  .key.wide{width:58px;}
+  .key.space{width:230px;}
+  .key.mod{width:64px;color:var(--sub);font-size:10px;}
+  .key.hl{border-color:var(--accent);background:#fff;box-shadow:0 0 0 2px var(--accent);}
+  .key.hl .bot,.key.hl .top{color:var(--accent);}
+  .key.shifthl{border-color:var(--accent);background:#fff;}
+  .key.shifthl{color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);}
+  .kbnote{text-align:center;font-size:10px;color:var(--sub);margin-top:6px;}
+
+  /* ============ 結果 ============ */
+  #result{padding:26px;align-items:center;overflow-y:auto;}
+  #result h2{font-size:18px;margin-bottom:4px;}
+  #result .who{color:var(--sub);font-size:13px;margin-bottom:18px;}
+  .score-hero{
+    background:var(--plate);border:1px solid var(--line);border-radius:12px;
+    padding:22px 30px;text-align:center;margin-bottom:16px;width:100%;max-width:560px;
+  }
+  .score-hero .big{font-size:58px;font-weight:800;color:var(--accent);line-height:1;font-variant-numeric:tabular-nums;}
+  .score-hero .unit{font-size:14px;color:var(--sub);margin-top:4px;}
+  .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:560px;margin-bottom:16px;}
+  .stat{background:var(--plate);border:1px solid var(--line);border-radius:9px;padding:13px 10px;text-align:center;}
+  .stat .v{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .stat .k{font-size:11px;color:var(--sub);margin-top:3px;}
+  .stat .v.bad{color:var(--accent);}
+  .feedback{
+    width:100%;max-width:560px;background:var(--plate);border:1px solid var(--line);
+    border-radius:9px;padding:14px 18px;margin-bottom:16px;font-size:13px;line-height:1.7;
+  }
+  .feedback .h{font-weight:700;margin-bottom:6px;font-size:13px;}
+  .weakkeys{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
+  .weakkey{font-family:var(--font-code);background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:4px 10px;font-size:14px;}
+  .weakkey b{color:var(--accent);}
+  .rank{width:100%;max-width:560px;background:var(--plate);border:1px solid var(--line);border-radius:9px;overflow:hidden;margin-bottom:18px;}
+  .rank .rh{padding:11px 16px;border-bottom:1px solid var(--line);font-weight:700;font-size:13px;display:flex;justify-content:space-between;}
+  .rank .rh .clear{font-size:11px;color:var(--sub);cursor:pointer;font-weight:400;}
+  .rank table{width:100%;border-collapse:collapse;font-size:13px;}
+  .rank td{padding:9px 16px;border-bottom:1px solid var(--line);}
+  .rank tr:last-child td{border-bottom:none;}
+  .rank tr.me{background:#fbf3f1;}
+  .rank .pos{width:34px;color:var(--sub);font-variant-numeric:tabular-nums;}
+  .rank .pos b{color:var(--accent);}
+  .rank .sc{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;}
+  .rank .meta{text-align:right;color:var(--sub);font-size:11px;}
+  .empty{padding:18px;text-align:center;color:var(--sub);font-size:12px;}
+
+  @media(max-width:560px){
+    .key{width:7.6vw;height:34px;font-size:10px;}
+    .key.wide{width:11vw;}.key.space{width:38vw;}.key.mod{width:13vw;}
+    .target{font-size:26px;}
+    .hud{gap:14px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <div class="mark">回転コード寿司 <b>Py打</b></div>
+      <div class="sub">Python Typing</div>
+    </div>
+    <div class="hud" id="hud" style="visibility:hidden;">
+      <div class="item"><div class="k">SCORE</div><div class="v" id="hudScore">0</div></div>
+      <div class="item"><div class="k">皿</div><div class="v" id="hudDish">0</div></div>
+      <div class="item"><div class="k">TIME</div><div class="v time" id="hudTime">60</div></div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ===== タイトル ===== -->
+    <section class="screen active" id="title">
+      <h1>回転コード寿司 <b>Py打</b></h1>
+      <p class="lead">
+        流れてくるお皿の<b>Pythonコード</b>を、左に消える前に半角でタイプしよう。<br>
+        コロン <code>:</code>・アスタリスク <code>*</code>・カッコ <code>( )</code> の位置は、下のキーボードが光って教えてくれる。<br>
+        全角のまま打つと「半角にして！」と注意してくれるよ。
+      </p>
+
+      <div class="panel">
+        <div class="field">
+          <div class="label">なまえ（ランキング表示用）</div>
+          <input type="text" id="playerName" maxlength="12" placeholder="例：みずの">
+        </div>
+
+        <div class="field">
+          <div class="label">難易度</div>
+          <div class="opts" id="levelOpts">
+            <div class="opt sel" data-level="1"><div class="t">初級</div><div class="d">基本ワード<br>print / def / for</div></div>
+            <div class="opt" data-level="2"><div class="t">中級</div><div class="d">記号入り<br>range(10) / x = 1</div></div>
+            <div class="opt" data-level="3"><div class="t">上級</div><div class="d">コード1行<br>for i in range(n):</div></div>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="label">制限時間</div>
+          <div class="opts" id="timeOpts">
+            <div class="opt" data-time="30"><div class="t">30秒</div><div class="d">おためし</div></div>
+            <div class="opt sel" data-time="60"><div class="t">60秒</div><div class="d">標準</div></div>
+            <div class="opt" data-time="90"><div class="t">90秒</div><div class="d">じっくり</div></div>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="label">皿のスピード</div>
+          <div class="opts" id="speedOpts">
+            <div class="opt sel" data-speed="0.7"><div class="t">ゆっくり</div><div class="d">じっくり打てる</div></div>
+            <div class="opt" data-speed="1.0"><div class="t">ふつう</div><div class="d">標準</div></div>
+            <div class="opt" data-speed="1.35"><div class="t">はやい</div><div class="d">上級者・競争用</div></div>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="label">キーボードガイド</div>
+          <div class="toggle-row" id="kbToggleRow">
+            <div class="toggle on" id="kbToggle"></div>
+            <span style="font-size:13px;">次に押すキーを画面で光らせる（場所を覚えるまでON推奨）</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="label">サウンド</div>
+          <div class="toggle-row" id="soundToggleRow">
+            <div class="toggle on" id="soundToggle"></div>
+            <span style="font-size:13px;">BGMと効果音を鳴らす</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn" id="startBtn">スタート</button>
+    </section>
+
+    <!-- ===== ゲーム ===== -->
+    <section class="screen" id="game">
+      <div class="belt-wrap">
+        <div class="belt"></div>
+        <div class="catch-line"><span class="label">▶ ここで取りこぼし</span></div>
+        <div class="combo">COMBO <b id="comboVal">0</b></div>
+        <div id="plates"></div>
+      </div>
+      <div class="typing-box">
+        <div class="target" id="target"></div>
+        <div class="hint" id="hint">　</div>
+      </div>
+      <div class="keyboard" id="keyboard"></div>
+    </section>
+
+    <!-- ===== 結果 ===== -->
+    <section class="screen" id="result">
+      <h2>お会計（結果）</h2>
+      <div class="who" id="resultWho"></div>
+
+      <div class="score-hero">
+        <div class="big" id="rScore">0</div>
+        <div class="unit">皿（タイプできた数）</div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat"><div class="v" id="rAcc">0%</div><div class="k">正確率</div></div>
+        <div class="stat"><div class="v" id="rKpm">0</div><div class="k">KPM（打鍵/分）</div></div>
+        <div class="stat"><div class="v" id="rMiss">0</div><div class="k">ミスタイプ</div></div>
+      </div>
+
+      <div class="feedback" id="feedback"></div>
+
+      <div class="rank">
+        <div class="rh">クラスランキング <span class="clear" id="clearRank">記録を消す</span></div>
+        <div id="rankBody"></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn" id="againBtn">もう一回</button>
+        <button class="btn ghost" id="homeBtn">設定を変える</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+"use strict";
+
+/* =========================================================
+   出題ワード（Pythonの単語・記号・コード行）
+   記号やコロン・アスタリスクを意識的に多く含めている
+   ========================================================= */
+const WORDS = {
+  1: ["print","def","for","while","if","else","elif","import","return","range",
+      "len","input","int","str","list","dict","True","False","None","class",
+      "in","and","or","not","break","continue","sum","max","min","sorted",
+      "append","type","float","bool","tuple","set","pass","with","open","map"],
+  2: ["range(10)","print()","x = 1","i += 1","n - 1","a == b","a != b","x * y",
+      "n ** 2","y / 2","a >= b","len(s)","s[0]","s[-1]","nums[i]","d['key']",
+      "x = []","x = {}","f(a, b)","i = 0","# comment","'hello'","\"py\"","a, b = 1, 2",
+      "True or False","not x","x % 2","total += n","x < 10","print(x)","obj.run()",
+      "max(a, b)","int(s)","str(n)","abs(-3)","x and y","x = x + 1","r = a * b","y -= 1"],
+  3: ["for i in range(10):","if x == 0:","while i < n:","def add(a, b):",
+      "print(f\"{name}\")","return a * b","import math as m","x = [i for i in r]",
+      "if a and b:","else:","nums = [1, 2, 3]","d = {'a': 1}","for k, v in d.items():",
+      "result = func(x)","data[i] = i + 1","print(\"Hello!\")","x, y = y, x",
+      "if n % 2 == 0:","total = sum(nums)","def main():","arr.append(x * 2)",
+      "while True:","return None","class Cat:","self.name = name","a = b = c = 0"]
+};
+
+/* =========================================================
+   JISキーボード配列（日本語キーボード）
+   各キー：表示用 normal / shift と data-key
+   ========================================================= */
+const KB_ROWS = [
+  // [dataKey, normalChar, shiftChar, classExtra]
+  [["1","1","!"],["2","2","\""],["3","3","#"],["4","4","$"],["5","5","%"],
+   ["6","6","&"],["7","7","'"],["8","8","("],["9","9",")"],["0","0",""],
+   ["minus","-","="],["caret","^","~"],["yen","¥","|"]],
+  [["q","q","Q"],["w","w","W"],["e","e","E"],["r","r","R"],["t","t","T"],
+   ["y","y","Y"],["u","u","U"],["i","i","I"],["o","o","O"],["p","p","P"],
+   ["at","@","`"],["lbracket","[","{"]],
+  [["a","a","A"],["s","s","S"],["d","d","D"],["f","f","F"],["g","g","G"],
+   ["h","h","H"],["j","j","J"],["k","k","K"],["l","l","L"],
+   ["semicolon",";","+"],["colon",":","*"],["rbracket","]","}"]],
+  [["z","z","Z"],["x","x","X"],["c","c","C"],["v","v","V"],["b","b","B"],
+   ["n","n","N"],["m","m","M"],["comma",",","<"],["period",".",">"],
+   ["slash","/","?"],["ro","\\","_"]]
+];
+
+/* 文字 → どのキー＋Shift要否（JIS基準の逆引き） */
+const CHAR2KEY = (function(){
+  const map = {};
+  KB_ROWS.forEach(row=>row.forEach(([dk,n,s])=>{
+    if(n) map[n] = {dk, shift:false};
+    if(s) map[s] = {dk, shift:true};
+  }));
+  // 英大文字
+  for(let c=65;c<=90;c++){
+    const up=String.fromCharCode(c), lo=up.toLowerCase();
+    map[up] = {dk:lo, shift:true};
+  }
+  map[" "] = {dk:"space", shift:false};
+  return map;
+})();
+
+/* =========================================================
+   状態
+   ========================================================= */
+const state = {
+  name:"プレイヤー",
+  level:1,
+  duration:60,
+  speedMul:0.7,     // 皿スピード倍率（ゆっくり/ふつう/はやい）
+  kbGuide:true,
+  sound:true,
+  running:false,
+  timeLeft:60,
+  score:0,          // タイプし切った皿の数
+  combo:0,
+  maxCombo:0,
+  correctKeys:0,    // 正しく打てた打鍵
+  missKeys:0,       // ミス打鍵
+  missedDish:0,     // 取りこぼした皿
+  zenkaku:0,        // 全角で打とうとした回数
+  weak:{},          // 苦手キー集計 {char:count}
+  plates:[],        // {word, x, el, idx, done}
+  nextIdx:0,
+  typed:"",
+  speed:0,          // px/frame
+  spawnGap:0,       // 皿の間隔(px)
+  lastSpawnX:9999,
+  beltWidth:0,
+  catchX:64,
+  rafId:null,
+  lastT:0,
+  timerId:null
+};
+
+const RANK = []; // セッション内ランキング {name,score,acc,kpm,level}
+
+/* =========================================================
+   サウンド（Web Audio APIで合成 / 音源ファイル・通信ともに不要）
+   ========================================================= */
+const Sound = {
+  ctx:null, master:null, bgmTimer:null, bgmStep:0,
+  ensure(){
+    if(this.ctx) return;
+    const AC = window.AudioContext||window.webkitAudioContext;
+    if(!AC) return;
+    this.ctx = new AC();
+    this.master = this.ctx.createGain();
+    this.master.gain.value = 0.9;
+    this.master.connect(this.ctx.destination);
+  },
+  resume(){
+    this.ensure();
+    if(this.ctx && this.ctx.state==="suspended") this.ctx.resume();
+  },
+  beep(freq,dur,type="sine",vol=0.2,when=0){
+    if(!state.sound || !this.ctx) return;
+    const t=this.ctx.currentTime+when;
+    const o=this.ctx.createOscillator(), g=this.ctx.createGain();
+    o.type=type; o.frequency.setValueAtTime(freq,t);
+    g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(vol,t+0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g); g.connect(this.master);
+    o.start(t); o.stop(t+dur+0.02);
+  },
+  se(name){
+    if(!state.sound) return;
+    this.ensure(); if(!this.ctx) return;
+    switch(name){
+      case "key":  this.beep(880,0.05,"square",0.09); break;
+      case "dish": this.beep(784,0.08,"triangle",0.22); this.beep(1175,0.12,"triangle",0.22,0.07); break;
+      case "miss": this.beep(150,0.12,"sawtooth",0.16); break;
+      case "drop": this.beep(330,0.10,"sine",0.20); this.beep(220,0.16,"sine",0.20,0.08); break;
+      case "warn": this.beep(440,0.08,"square",0.20); this.beep(440,0.08,"square",0.20,0.12); break;
+      case "start":[523,659,784,1047].forEach((f,i)=>this.beep(f,0.12,"triangle",0.22,i*0.08)); break;
+      case "end":  [784,659,523,392].forEach((f,i)=>this.beep(f,0.18,"triangle",0.22,i*0.12)); break;
+    }
+  },
+  startBGM(){
+    if(!state.sound) return;
+    this.ensure(); if(!this.ctx) return;
+    this.stopBGM();
+    const mel=[72,76,79,76,74,79,81,79,72,76,79,84,81,79,76,74]; // メジャーペンタ
+    const bass=[48,48,55,55,53,53,50,50];
+    const mfreq=n=>440*Math.pow(2,(n-69)/12);
+    this.bgmStep=0;
+    this.bgmTimer=setInterval(()=>{
+      if(!state.sound || !this.ctx){ this.stopBGM(); return; }
+      const s=this.bgmStep;
+      this.beep(mfreq(mel[s%mel.length]),0.18,"triangle",0.05);
+      if(s%2===0) this.beep(mfreq(bass[(s/2)%bass.length]),0.32,"sine",0.06);
+      if(s%4===0) this.beep(2000,0.02,"square",0.015);
+      this.bgmStep++;
+    },220);
+  },
+  stopBGM(){ if(this.bgmTimer){ clearInterval(this.bgmTimer); this.bgmTimer=null; } }
+};
+
+/* =========================================================
+   DOM
+   ========================================================= */
+const $ = s=>document.querySelector(s);
+const screens = {title:$("#title"),game:$("#game"),result:$("#result")};
+function show(name){
+  Object.values(screens).forEach(s=>s.classList.remove("active"));
+  screens[name].classList.add("active");
+}
+
+/* ---- タイトル：選択UI ---- */
+$("#levelOpts").addEventListener("click",e=>{
+  const o=e.target.closest(".opt"); if(!o)return;
+  $("#levelOpts").querySelectorAll(".opt").forEach(x=>x.classList.remove("sel"));
+  o.classList.add("sel"); state.level=+o.dataset.level;
+});
+$("#timeOpts").addEventListener("click",e=>{
+  const o=e.target.closest(".opt"); if(!o)return;
+  $("#timeOpts").querySelectorAll(".opt").forEach(x=>x.classList.remove("sel"));
+  o.classList.add("sel"); state.duration=+o.dataset.time;
+});
+$("#kbToggleRow").addEventListener("click",()=>{
+  state.kbGuide=!state.kbGuide;
+  $("#kbToggle").classList.toggle("on",state.kbGuide);
+});
+$("#speedOpts").addEventListener("click",e=>{
+  const o=e.target.closest(".opt"); if(!o)return;
+  $("#speedOpts").querySelectorAll(".opt").forEach(x=>x.classList.remove("sel"));
+  o.classList.add("sel"); state.speedMul=+o.dataset.speed;
+});
+$("#soundToggleRow").addEventListener("click",()=>{
+  state.sound=!state.sound;
+  $("#soundToggle").classList.toggle("on",state.sound);
+  if(!state.sound) Sound.stopBGM();
+});
+
+/* =========================================================
+   キーボード描画
+   ========================================================= */
+function buildKeyboard(){
+  const kb=$("#keyboard"); kb.innerHTML="";
+  KB_ROWS.forEach((row,ri)=>{
+    const r=document.createElement("div"); r.className="kbrow";
+    row.forEach(([dk,n,s])=>{
+      const k=document.createElement("div"); k.className="key"; k.dataset.key=dk;
+      const isAlpha=/^[a-z]$/.test(n);
+      if(isAlpha){
+        k.innerHTML=`<span class="bot">${n.toUpperCase()}</span>`;
+      }else{
+        k.innerHTML=`<span class="top">${esc(s)}</span><span class="bot">${esc(n)}</span>`;
+      }
+      r.appendChild(k);
+    });
+    kb.appendChild(r);
+  });
+  // 最下段：Shift + Space + Shift
+  const r=document.createElement("div"); r.className="kbrow";
+  const shL=document.createElement("div"); shL.className="key mod"; shL.dataset.key="shift"; shL.textContent="Shift";
+  const sp=document.createElement("div"); sp.className="key space"; sp.dataset.key="space"; sp.innerHTML='<span class="bot">space</span>';
+  const shR=document.createElement("div"); shR.className="key mod"; shR.dataset.key="shift2"; shR.textContent="Shift";
+  r.appendChild(shL); r.appendChild(sp); r.appendChild(shR);
+  kb.appendChild(r);
+
+  const note=document.createElement("div"); note.className="kbnote";
+  note.textContent="JIS配列（日本語キーボード）対応 / 上段の小さい字は Shift を押したときの記号";
+  kb.appendChild(note);
+}
+function esc(c){
+  if(c==="<")return "&lt;"; if(c===">")return "&gt;"; if(c==="&")return "&amp;";
+  if(c==="\"")return "&quot;"; return c;
+}
+function clearKbHighlight(){
+  $("#keyboard").querySelectorAll(".key").forEach(k=>k.classList.remove("hl","shifthl"));
+}
+function highlightKey(ch){
+  clearKbHighlight();
+  if(!state.kbGuide) return;
+  const info=CHAR2KEY[ch];
+  if(!info) return;
+  const kb=$("#keyboard");
+  const main=kb.querySelector(`.key[data-key="${info.dk}"]`);
+  if(main) main.classList.add("hl");
+  if(info.shift){
+    kb.querySelectorAll('.key[data-key="shift"],.key[data-key="shift2"]').forEach(s=>s.classList.add("shifthl"));
+  }
+}
+
+/* =========================================================
+   ゲーム開始
+   ========================================================= */
+function startGame(){
+  const nm=$("#playerName").value.trim();
+  state.name = nm || "プレイヤー";
+  state.running=true;
+  state.timeLeft=state.duration;
+  state.score=0; state.combo=0; state.maxCombo=0;
+  state.correctKeys=0; state.missKeys=0; state.missedDish=0; state.zenkaku=0;
+  state.weak={}; state.plates=[]; state.nextIdx=0; state.typed="";
+
+  // 難易度で速度・間隔を調整（基準をやや下げ、さらにスピード倍率を掛ける）
+  const cfg={
+    1:{speed:118, gap:300},
+    2:{speed:108, gap:350},
+    3:{speed:95,  gap:440}
+  }[state.level];
+  state.speed=cfg.speed*state.speedMul;   // px/秒（ゆっくり=×0.7 など）
+  state.spawnGap=cfg.gap;
+
+  $("#plates").innerHTML="";
+  $("#hud").style.visibility="visible";
+  updateHud();
+  buildKeyboard();
+  $("#keyboard").style.display = state.kbGuide ? "" : "none";
+  show("game");
+  window.scrollTo(0,0);
+
+  // サウンド開始（スタートのクリック操作を起点に音声を有効化）
+  Sound.resume();
+  Sound.se("start");
+  Sound.startBGM();
+
+  const wrap=$(".belt-wrap");
+  state.beltWidth=wrap.clientWidth;
+  state.lastSpawnX = state.beltWidth + 200; // 初回スポーン誘発
+  spawnPlate();           // 最初の1皿
+  setActive();
+
+  // タイマー
+  state.timerId=setInterval(()=>{
+    state.timeLeft--;
+    updateHud();
+    if(state.timeLeft<=0) endGame();
+  },1000);
+
+  // アニメーション
+  state.lastT=performance.now();
+  state.rafId=requestAnimationFrame(loop);
+}
+
+function randWord(){
+  const arr=WORDS[state.level];
+  return arr[Math.floor(Math.random()*arr.length)];
+}
+
+function spawnPlate(){
+  const wrap=$(".belt-wrap");
+  const w=wrap.clientWidth;
+  const word=randWord();
+  const el=document.createElement("div");
+  el.className="plate";
+  el.innerHTML=`<div class="card">${escWord(word)}</div><div class="dish"></div>`;
+  $("#plates").appendChild(el);
+  const x=w+70;
+  const p={word, x, el, done:false, missed:false};
+  el.style.left=x+"px";
+  state.plates.push(p);
+  state.lastSpawnX=x;
+}
+function escWord(w){
+  return w.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+/* 先頭（左端に最も近い未処理）の皿をアクティブに */
+function activePlate(){
+  for(const p of state.plates){ if(!p.done && !p.missed) return p; }
+  return null;
+}
+function setActive(){
+  state.plates.forEach(p=>p.el.classList.remove("active"));
+  const p=activePlate();
+  state.typed="";
+  if(p){ p.el.classList.add("active"); }
+  renderTarget();
+}
+
+/* =========================================================
+   メインループ
+   ========================================================= */
+function loop(now){
+  if(!state.running) return;
+  const dt=(now-state.lastT)/1000;
+  state.lastT=now;
+  const move=state.speed*dt;
+
+  for(const p of state.plates){
+    if(p.done) continue;
+    p.x-=move;
+    p.el.style.left=p.x+"px";
+    if(!p.missed && p.x < state.catchX-30){
+      // 取りこぼし
+      p.missed=true;
+      p.el.classList.add("missed");
+      state.missedDish++;
+      state.combo=0; updateCombo();
+      Sound.se("drop");
+      removeLater(p.el);
+      setActive();
+    }
+  }
+
+  // 新しい皿を投入（最後の皿が十分左に進んだら）
+  const last=state.plates[state.plates.length-1];
+  if(!last || (state.beltWidth+70 - last.x) >= state.spawnGap){
+    spawnPlate();
+  }
+
+  // 配列の掃除
+  state.plates=state.plates.filter(p=>!(p.removed));
+
+  if(activePlate()===null) setActive();
+
+  state.rafId=requestAnimationFrame(loop);
+}
+function removeLater(el){
+  setTimeout(()=>{ el.remove(); },280);
+  // 論理削除フラグ
+  for(const p of state.plates){ if(p.el===el) p.removed=true; }
+}
+
+/* =========================================================
+   入力表示
+   ========================================================= */
+function renderTarget(){
+  const p=activePlate();
+  const box=$("#target");
+  if(!p){ box.innerHTML=""; clearKbHighlight(); return; }
+  const w=p.word;
+  let html="";
+  for(let i=0;i<w.length;i++){
+    let cls = i<state.typed.length ? "done" : (i===state.typed.length ? "cur" : "todo");
+    let ch=w[i];
+    if(ch===" "){ html+=`<span class="c ${cls} space">&nbsp;</span>`; }
+    else html+=`<span class="c ${cls}">${escWord(ch)}</span>`;
+  }
+  box.innerHTML=html;
+  // 次に打つキーを光らせる
+  const nextCh=w[state.typed.length];
+  if(nextCh!==undefined) highlightKey(nextCh);
+  else clearKbHighlight();
+}
+
+function updateHud(){
+  $("#hudScore").textContent=state.score;
+  $("#hudDish").textContent=state.score+state.missedDish;
+  const t=$("#hudTime"); t.textContent=state.timeLeft;
+  t.classList.toggle("warn",state.timeLeft<=10);
+}
+function updateCombo(){
+  $("#comboVal").textContent=state.combo;
+  if(state.combo>state.maxCombo) state.maxCombo=state.combo;
+}
+
+/* =========================================================
+   キー入力処理
+   ========================================================= */
+function flashZenkaku(){
+  state.zenkaku++;
+  Sound.se("warn");
+  const h=$("#hint");
+  h.textContent="⚠ 全角になってるで！ 半角（英数）に切り替えてな（半角/全角キー）";
+  h.classList.add("zenkaku");
+  clearTimeout(state._zt);
+  state._zt=setTimeout(()=>{ h.textContent="　"; h.classList.remove("zenkaku"); },1600);
+}
+
+document.addEventListener("compositionstart",e=>{
+  if(state.running){ e.preventDefault?.(); flashZenkaku(); }
+});
+
+document.addEventListener("keydown",e=>{
+  if(!state.running) return;
+
+  // IME（全角変換）中の入力を検知
+  if(e.isComposing || e.keyCode===229){ flashZenkaku(); return; }
+
+  // 修飾のみは無視
+  if(e.key==="Shift"||e.key==="Control"||e.key==="Alt"||e.key==="Meta"||
+     e.key==="CapsLock"||e.key==="Tab"||e.key==="Backspace"||e.key==="Enter"||
+     e.key.startsWith("Arrow")) return;
+
+  if(e.key.length!==1) return; // F1等を除外
+
+  const p=activePlate();
+  if(!p) return;
+  const expected=p.word[state.typed.length];
+
+  // 全角英数（IMEで確定された全角文字）の検知
+  if(e.key.charCodeAt(0)>0x7f){ flashZenkaku(); return; }
+
+  e.preventDefault();
+
+  if(e.key===expected){
+    state.typed+=e.key;
+    state.correctKeys++;
+    Sound.se("key");
+    renderTarget();
+    if(state.typed.length===p.word.length){
+      // 皿コンプリート
+      p.done=true;
+      p.el.classList.add("caught");
+      state.score++;
+      state.combo++; updateCombo();
+      Sound.se("dish");
+      removeLater(p.el);
+      updateHud();
+      setActive();
+    }
+  }else{
+    // ミスタイプ
+    state.missKeys++;
+    state.combo=0; updateCombo();
+    Sound.se("miss");
+    // 苦手キー集計（打つべきだった文字）
+    if(expected!==undefined){
+      const key = expected===" " ? "␣(space)" : expected;
+      state.weak[key]=(state.weak[key]||0)+1;
+    }
+    // 軽いフィードバック
+    const h=$("#hint");
+    h.textContent = expected===" "
+      ? "次はスペースやで"
+      : `次は「${expected}」を押す`;
+    h.classList.remove("zenkaku");
+  }
+});
+
+/* =========================================================
+   終了・結果
+   ========================================================= */
+function endGame(){
+  state.running=false;
+  clearInterval(state.timerId);
+  cancelAnimationFrame(state.rafId);
+  clearKbHighlight();
+  $("#hud").style.visibility="hidden";
+  Sound.stopBGM();
+  Sound.se("end");
+
+  const totalKeys=state.correctKeys+state.missKeys;
+  const acc = totalKeys>0 ? Math.round(state.correctKeys/totalKeys*100) : 0;
+  const kpm = Math.round(state.correctKeys / (state.duration/60));
+
+  $("#resultWho").textContent=`${state.name} ／ ${["","初級","中級","上級"][state.level]}・${state.duration}秒`;
+  $("#rScore").textContent=state.score;
+  $("#rAcc").textContent=acc+"%";
+  $("#rKpm").textContent=kpm;
+  $("#rMiss").textContent=state.missKeys;
+  $("#rMiss").classList.toggle("bad",state.missKeys>0);
+
+  buildFeedback(acc);
+
+  // ランキング登録
+  RANK.push({name:state.name,score:state.score,acc,kpm,level:state.level});
+  RANK.sort((a,b)=> b.score-a.score || b.acc-a.acc);
+  renderRank();
+
+  show("result");
+}
+
+function buildFeedback(acc){
+  const fb=$("#feedback");
+  let html="";
+
+  // 苦手キーTOP3
+  const weak=Object.entries(state.weak).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  html+=`<div class="h">苦手キー（よく間違えた）</div>`;
+  if(weak.length===0){
+    html+=`<div style="color:var(--sub)">ミスなし！ばっちりや 🎉</div>`;
+  }else{
+    html+=`<div class="weakkeys">`;
+    weak.forEach(([k,c])=>{
+      const loc=keyLocation(k);
+      html+=`<span class="weakkey"><b>${escWord(k)}</b> ×${c}${loc?`<br><span style="font-size:10px;color:var(--sub)">${loc}</span>`:""}</span>`;
+    });
+    html+=`</div>`;
+  }
+
+  // 全角ミス
+  if(state.zenkaku>0){
+    html+=`<div class="h" style="margin-top:12px;">全角のまま打とうとした回数：<span style="color:var(--accent)">${state.zenkaku}回</span></div>`;
+    html+=`<div style="color:var(--sub)">タイピング中は「半角/全角」キーで<b>半角（英数）</b>に固定してから始めよう。</div>`;
+  }
+
+  // 取りこぼし
+  if(state.missedDish>0){
+    html+=`<div class="h" style="margin-top:12px;">取りこぼした皿：${state.missedDish}枚</div>`;
+    html+=`<div style="color:var(--sub)">あせらず1文字ずつでOK。キーの場所を覚えれば自然に速くなるよ。</div>`;
+  }
+
+  fb.innerHTML=html;
+}
+
+/* 苦手キーの位置をことばで説明（コロン・*などの場所がわからない子向け） */
+function keyLocation(ch){
+  if(ch==="␣(space)") return "スペースキー";
+  const info=CHAR2KEY[ch];
+  if(!info) return "";
+  const labels={
+    colon:"「:」キー", semicolon:"「;」キー", at:"「@」キー",
+    lbracket:"「[」キー", rbracket:"「]」キー", caret:"「^」キー",
+    minus:"「-」キー", yen:"「¥」キー", ro:"右下「ろ」キー",
+    comma:"「,」キー", period:"「.」キー", slash:"「/」キー"
+  };
+  let base;
+  if(/^[a-z]$/.test(info.dk)) base=`「${info.dk.toUpperCase()}」キー`;
+  else if(/^[0-9]$/.test(info.dk)) base=`数字「${info.dk}」キー`;
+  else base=labels[info.dk]||`「${info.dk}」キー`;
+  return info.shift ? `Shift + ${base}` : base;
+}
+
+function renderRank(){
+  const body=$("#rankBody");
+  if(RANK.length===0){ body.innerHTML=`<div class="empty">まだ記録がないで</div>`; return; }
+  const top=RANK.slice(0,10);
+  // 直近の自分（最後に追加された同名＆同スコア）を強調
+  let meMarked=false;
+  let rows=top.map((r,i)=>{
+    const lv=["","初","中","上"][r.level];
+    const isMe = !meMarked && r.name===state.name && r.score===state.score;
+    if(isMe) meMarked=true;
+    const pos=i===0?`<b>1</b>`:(i+1);
+    return `<tr class="${isMe?"me":""}">
+      <td class="pos">${pos}</td>
+      <td>${escWord(r.name)}</td>
+      <td class="meta">${lv}・${r.acc}%・${r.kpm}KPM</td>
+      <td class="sc">${r.score}</td>
+    </tr>`;
+  }).join("");
+  body.innerHTML=`<table>${rows}</table>`;
+}
+
+$("#clearRank").addEventListener("click",()=>{
+  if(confirm("クラスランキングの記録を全部消すで。ええか？")){
+    RANK.length=0; renderRank();
+  }
+});
+
+/* =========================================================
+   ボタン
+   ========================================================= */
+$("#startBtn").addEventListener("click",startGame);
+$("#againBtn").addEventListener("click",startGame);
+$("#homeBtn").addEventListener("click",()=>{ Sound.stopBGM(); show("title"); $("#playerName").focus(); });
+
+// Enterでスタート（タイトルの名前入力時）
+$("#playerName").addEventListener("keydown",e=>{
+  if(e.key==="Enter") startGame();
+});
+
+// 初期キーボードを一度描画（タイトルでは非表示だが準備）
+buildKeyboard();
+</script>
+</body>
+</html>
