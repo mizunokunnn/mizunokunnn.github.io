@@ -1,0 +1,2868 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ちきゅうのメロディ">
+<meta name="theme-color" content="#101020">
+<title>ちきゅうのメロディ EARTH MELODY</title>
+<!-- アイコン(インラインSVG・外部通信ゼロ) -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23101840'/%3E%3Ccircle cx='32' cy='34' r='16' fill='%234a9ce8'/%3E%3Cpath d='M20 30q12-10 24 0' stroke='%236cbf45' stroke-width='5' fill='none'/%3E%3Ctext x='32' y='20' font-size='14' text-anchor='middle' fill='%23ffd75e'%3E%E2%99%AA%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23101840'/%3E%3Ccircle cx='90' cy='96' r='46' fill='%234a9ce8'/%3E%3Cpath d='M54 84q36-30 72 0' stroke='%236cbf45' stroke-width='13' fill='none'/%3E%3Ctext x='90' y='56' font-size='40' text-anchor='middle' fill='%23ffd75e'%3E%E2%99%AA%3C/text%3E%3C/svg%3E">
+<link rel="manifest" href="data:application/json,%7B%22name%22%3A%22%E3%81%A1%E3%81%8D%E3%82%85%E3%81%86%E3%81%AE%E3%83%A1%E3%83%AD%E3%83%87%E3%82%A3%22%2C%22short_name%22%3A%22%E3%83%A1%E3%83%AD%E3%83%87%E3%82%A3%22%2C%22start_url%22%3A%22.%22%2C%22scope%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22background_color%22%3A%22%23101020%22%2C%22theme_color%22%3A%22%23101020%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%253D%2527http%253A%252F%252Fwww.w3.org%252F2000%252Fsvg%2527%2520viewBox%253D%25270%25200%2520180%2520180%2527%253E%253Crect%2520width%253D%2527180%2527%2520height%253D%2527180%2527%2520fill%253D%2527%2523101840%2527%252F%253E%253Ccircle%2520cx%253D%252790%2527%2520cy%253D%252796%2527%2520r%253D%252746%2527%2520fill%253D%2527%25234a9ce8%2527%252F%253E%253C%252Fsvg%253E%22%2C%22sizes%22%3A%22180x180%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%22%7D%5D%7D">
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; touch-action:manipulation; }
+  html,body { height:100%; background:#101020; overflow:hidden; }
+  body { font-family:'DotGothic16','Hiragino Maru Gothic ProN',monospace; color:#fff;
+         display:flex; flex-direction:column; align-items:center;
+         padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+  #stage { position:relative; width:100%; max-width:480px; flex:0 0 auto; }
+  canvas { display:block; width:100%; image-rendering:pixelated; background:#000; border-radius:6px; }
+
+  /* ====== 会話ウィンドウ (MOTHER風) ====== */
+  .win { background:#101840; border:3px solid #fff; border-radius:10px; box-shadow:0 0 0 3px #101840, 4px 4px 0 rgba(0,0,0,.5); }
+  #dialog { position:absolute; left:2%; right:2%; bottom:3%; padding:10px 12px 16px; min-height:84px;
+            font-size:16px; line-height:1.65; display:none; z-index:20; }
+  #dialog .name { color:#ffd75e; }
+  #dialog .next { position:absolute; right:10px; bottom:4px; animation:bl .7s infinite; }
+  @keyframes bl { 50%{opacity:0} }
+  #choices { position:absolute; right:4%; bottom:120px; padding:8px 14px; display:none; z-index:21; font-size:17px; }
+  #choices div { padding:4px 6px 4px 22px; position:relative; }
+  #choices div.sel::before { content:"▶"; position:absolute; left:0; }
+
+  /* ====== HUD ====== */
+  #hud { position:absolute; top:6px; left:6px; z-index:5; font-size:12px; background:rgba(16,24,64,.75);
+         border:2px solid #fff; border-radius:8px; padding:4px 8px; line-height:1.5; pointer-events:none; }
+
+  /* ====== コントローラ ====== */
+  #pad { width:100%; max-width:480px; flex:1; display:flex; align-items:center; justify-content:space-between;
+         padding:10px 14px 16px; }
+  #dpad { position:relative; width:150px; height:150px; }
+  .dbtn { position:absolute; width:50px; height:50px; background:#2a2a3e; border:2px solid #555; border-radius:10px;
+          display:flex; align-items:center; justify-content:center; font-size:20px; color:#aaa; }
+  .dbtn:active, .dbtn.on { background:#4a4a6e; color:#fff; }
+  #d-up{left:50px;top:0} #d-down{left:50px;top:100px} #d-left{left:0;top:50px} #d-right{left:100px;top:50px}
+  #abtns { display:flex; gap:18px; align-items:flex-end; }
+  .ab { width:64px; height:64px; border-radius:50%; border:3px solid #666; display:flex; align-items:center; justify-content:center;
+        font-size:22px; font-weight:bold; }
+  #btnB { background:#2a3e2a; color:#9c9; margin-bottom:30px; }
+  #btnA { background:#3e2a2a; color:#c99; }
+  .ab:active { filter:brightness(1.6); }
+
+  /* ====== メニュー ====== */
+  #menu { position:absolute; top:6px; right:6px; z-index:25; padding:8px 4px; display:none; min-width:130px; font-size:16px; }
+  #menu div { padding:6px 10px 6px 26px; position:relative; }
+  #menu div.sel::before { content:"▶"; position:absolute; left:8px; }
+  #subwin { position:absolute; top:6px; left:4%; right:38%; z-index:26; padding:10px; display:none; font-size:14px; line-height:1.7; max-height:84%; overflow-y:auto; }
+  #subwin.statwin { right:4%; font-size:13px; line-height:1.55; }
+  #subwin.statwin hr { margin:5px 0; }
+  #subwin .sel::before { content:"▶"; margin-right:2px; }
+
+  /* ====== バトル ====== */
+  #battle { position:absolute; inset:0; z-index:40; display:none; flex-direction:column; border-radius:6px; overflow:hidden; background:#0a0612; }
+  #bbg { position:absolute; inset:0; }
+  #benemies { position:relative; flex:1; display:flex; align-items:center; justify-content:center; gap:24px; z-index:2; }
+  .bfoe { text-align:center; transition:opacity .4s, transform .1s; }
+  .bfoe .icon { font-size:64px; filter:drop-shadow(0 4px 6px rgba(0,0,0,.5)); }
+  .bfoe .ficon { width:80px; height:80px; image-rendering:pixelated; display:block; filter:drop-shadow(0 4px 6px rgba(0,0,0,.5)); }
+  .bfoe .fname { font-size:12px; background:rgba(0,0,0,.55); border-radius:6px; padding:1px 6px; margin-top:2px; }
+  .bfoe.dead { opacity:0; transform:scale(.2); }
+  .bfoe.hit { animation:shake .25s; }
+  @keyframes shake { 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+  #bparty { position:relative; z-index:2; display:flex; gap:4px; justify-content:center; padding:0 4px 4px; }
+  .pcard { background:#101840; border:2px solid #fff; border-radius:8px; padding:3px 6px; font-size:11px; min-width:72px; text-align:center; }
+  .pcard.act { border-color:#ffd75e; box-shadow:0 0 8px #ffd75e; }
+  .pcard .hp { color:#8f8; } .pcard .pp { color:#8cf; }
+  .pcard.ko { opacity:.4; }
+  #bmsg { position:relative; z-index:2; margin:0 4px 4px; padding:8px 10px; min-height:58px; font-size:15px; line-height:1.6; }
+  #bcmds { position:relative; z-index:2; display:none; grid-template-columns:1fr 1fr; gap:4px; margin:0 4px 4px; }
+  .bcmd { background:#101840; border:2px solid #fff; border-radius:8px; padding:9px 4px; text-align:center; font-size:15px; }
+  .bcmd:active { background:#2a3a80; }
+  .bcmd.dis { opacity:.4; }
+  #blist { position:absolute; left:4%; right:4%; bottom:8px; z-index:46; margin:0; padding:8px 12px;
+           display:none; max-height:64%; overflow-y:auto; font-size:15px; line-height:1.9;
+           box-shadow:0 6px 26px rgba(0,0,0,.6); }
+  #blist div:active { color:#ffd75e; }
+
+  /* ====== タイトル ====== */
+  #title { position:absolute; inset:0; z-index:50; display:flex; flex-direction:column; align-items:center; justify-content:center;
+           background:radial-gradient(ellipse at 50% 30%, #243070, #0a0a1a 70%); border-radius:6px; }
+  #title h1 { font-size:30px; letter-spacing:2px; color:#ffd75e; text-shadow:3px 3px 0 #803030; margin-bottom:4px; text-align:center; }
+  #title .sub { font-size:13px; color:#9ab; margin-bottom:30px; }
+  #title .opt { font-size:18px; padding:8px 24px; margin:4px; border:2px solid transparent; border-radius:8px; }
+  #title .opt.on { border-color:#fff; background:rgba(255,255,255,.08); }
+  #title .credit { position:absolute; bottom:12px; font-size:11px; color:#667; }
+  .spi { width:22px; height:22px; image-rendering:pixelated; vertical-align:-5px; margin-right:2px; }
+  .nav { outline:2px solid #ffd75e; outline-offset:-1px; background:rgba(255,215,94,.14); border-radius:4px; }
+  #subwin .tgt, #subwin .it, #subwin .ps { display:inline-block; width:100%; box-sizing:border-box; padding:1px 4px; }
+  .star { position:absolute; background:#fff; width:2px; height:2px; border-radius:50%; animation:tw 2s infinite; }
+  @keyframes tw { 50%{opacity:.2} }
+
+  /* ====== 状態異常バッジ / HPロール ====== */
+  .pcard .badge { display:inline-block; font-size:10px; border-radius:4px; padding:0 3px; margin-left:2px; }
+  .pcard .b-doku { background:#7a3a8a; color:#f0c0ff; }
+  .pcard .b-nemu { background:#2a5a8a; color:#bfe0ff; }
+  .pcard.lowhp .hp { color:#ff6a6a; animation:lowbl .6s infinite; }
+  @keyframes lowbl { 50%{opacity:.35} }
+
+  /* ====== 戦闘演出オーバーレイ ====== */
+  #bfx { position:absolute; inset:0; z-index:47; display:none; align-items:center; justify-content:center; pointer-events:none; }
+  #bfx .smaaash { font-size:40px; font-weight:bold; color:#fff; letter-spacing:1px;
+    text-shadow:0 0 6px #ff4, 4px 4px 0 #d83434, -2px -2px 0 #2858c8; animation:smash .55s ease-out forwards; }
+  @keyframes smash { 0%{transform:scale(.2) rotate(-12deg); opacity:0;} 35%{transform:scale(1.25) rotate(4deg); opacity:1;} 100%{transform:scale(1) rotate(0); opacity:0;} }
+  #bfx .stword { font-size:30px; font-weight:bold; animation:stpop .8s ease-out forwards; }
+  @keyframes stpop { 0%{transform:translateY(10px); opacity:0;} 25%{opacity:1;} 100%{transform:translateY(-18px); opacity:0;} }
+  #flashlayer { position:absolute; inset:0; z-index:44; background:#fff; opacity:0; pointer-events:none; }
+  #bbg.bgboss { inset:-45%; background:repeating-conic-gradient(from 0deg at 50% 45%, #5a1030 0 12deg, #20062a 12deg 24deg); transform-origin:center center; animation:bgspin 7s linear infinite, hue 5s linear infinite; }
+  @keyframes bgspin { from{ transform:rotate(0deg) scale(1.15); } to{ transform:rotate(360deg) scale(1.15); } }
+  #toast { position:absolute; left:50%; top:18%; transform:translateX(-50%); z-index:30; padding:6px 14px;
+    font-size:14px; display:none; white-space:nowrap; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="cv" width="320" height="288"></canvas>
+  <div id="hud"></div>
+  <div id="dialog" class="win"><span id="dtext"></span><span class="next">▼</span></div>
+  <div id="choices" class="win"></div>
+  <div id="menu" class="win"></div>
+  <div id="subwin" class="win"></div>
+
+  <div id="battle">
+    <div id="bbg"></div>
+    <div id="flashlayer"></div>
+    <div id="benemies"></div>
+    <div id="bparty"></div>
+    <div id="blist" class="win"></div>
+    <div id="bcmds"></div>
+    <div id="bmsg" class="win"></div>
+    <div id="bfx"></div>
+  </div>
+
+  <div id="toast" class="win"></div>
+
+  <div id="title">
+    <h1>ちきゅうの<br>メロディ</h1>
+    <div class="sub">- EARTH MELODY -</div>
+    <div class="opt" id="optNew">はじめから</div>
+    <div class="opt" id="optCont">つづきから</div>
+    <div class="credit">A MOTHER2-style family adventure</div>
+  </div>
+</div>
+
+<div id="pad">
+  <div id="dpad">
+    <div class="dbtn" id="d-up">▲</div>
+    <div class="dbtn" id="d-left">◀</div>
+    <div class="dbtn" id="d-right">▶</div>
+    <div class="dbtn" id="d-down">▼</div>
+  </div>
+  <div id="abtns">
+    <div class="ab" id="btnB">B</div>
+    <div class="ab" id="btnA">A</div>
+  </div>
+</div>
+<script>
+"use strict";
+/* =================================================================
+   ちきゅうのメロディ EARTH MELODY  (MOTHER2風 家族RPG)
+   主人公: るい(女のコ) / おとうと: とき(男のコ) / 黒柴: 琥太郎 / ママ / パパ(でんわ)
+   ================================================================= */
+const $ = id => document.getElementById(id);
+const cv = $('cv'), ctx = cv.getContext('2d');
+const TS = 32, VW = 10, VH = 9;
+
+/* ---------------- サウンド (Web Audio) ---------------- */
+let AC = null;
+function ac(){
+  if(!AC){ try{ AC = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+  if(AC){
+    if(AC.state==='suspended') AC.resume();
+    if(typeof BGM!=='undefined' && BGM.want && !BGM.cur && typeof playBGM==='function') playBGM(BGM.want);
+  }
+  return AC;
+}
+function beep(freq, dur=0.07, type='square', vol=0.05, when=0){
+  const a = ac(); if(!a) return;
+  const o = a.createOscillator(), g = a.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.setValueAtTime(vol, a.currentTime+when);
+  g.gain.exponentialRampToValueAtTime(0.001, a.currentTime+when+dur);
+  o.connect(g); g.connect(a.destination);
+  o.start(a.currentTime+when); o.stop(a.currentTime+when+dur+0.02);
+}
+const SE = {
+  ok:   ()=>beep(880,.06),
+  move: ()=>beep(440,.03,'square',.02),
+  hit:  ()=>{beep(180,.1,'sawtooth',.08); beep(120,.12,'sawtooth',.06,.04);},
+  heal: ()=>{beep(660,.08,'sine',.06); beep(990,.12,'sine',.06,.08);},
+  lvup: ()=>{[523,659,784,1047].forEach((f,i)=>beep(f,.12,'square',.05,i*.1));},
+  dead: ()=>{[400,300,200,120].forEach((f,i)=>beep(f,.15,'sawtooth',.06,i*.12));},
+  crit: ()=>{[1200,300,900,200].forEach((f,i)=>beep(f,.09,'sawtooth',.09,i*.04)); beep(140,.22,'sawtooth',.07,.04);},
+  tick: ()=>beep(1320,.018,'square',.02),
+  poison:()=>{beep(300,.12,'sawtooth',.05); beep(220,.14,'sawtooth',.05,.07);},
+  sleep:()=>{[660,560,460,360].forEach((f,i)=>beep(f,.13,'sine',.045,i*.08));},
+};
+/* メロディ8音 (サウンドストーン風) */
+const MELODY = [523,659,784,880,784,659,587,523];
+function playMelody(n){
+  if(typeof pauseBGM==='function') pauseBGM(n*320+600);
+  for(let i=0;i<n;i++) beep(MELODY[i], .28, 'triangle', .08, i*.32);
+}
+
+/* ---------------- アイテム ---------------- */
+const ITEMS = {
+  onigiri:  {n:'おにぎり',      heal:35,  price:30,  d:'HPを 35 かいふくする'},
+  herb:     {n:'いやしのハーブ', heal:60,  price:60,  d:'HPを 60 かいふくする'},
+  juice:    {n:'PPジュース',    pp:25,    price:80,  d:'PPを 25 かいふくする'},
+  curry:    {n:'ママのカレー',   full:1,   price:250, d:'HPとPPが ぜんかいふく！'},
+  bone:     {n:'こだわりのホネ', heal:50,  price:50,  d:'HP50かいふく。琥太郎が よろこぶ'},
+};
+
+/* ---------------- サイ(超能力) ---------------- */
+const PSI = {
+  spark:  {n:'サイ・スパーク',  pp:4,  type:'atk1', pow:1.9, lv:1,  who:'rui',  d:'敵1体に ねんりきの いなずま'},
+  flash:  {n:'サイ・フラッシュ', pp:10, type:'atkA', pow:1.4, lv:7,  who:'rui',  d:'敵ぜんたいを ひかりで こうげき'},
+  nova:   {n:'サイ・ノヴァ',    pp:18, type:'atk1', pow:3.6, lv:11, who:'rui',  d:'ばくはつする ほしの ちから'},
+  heal:   {n:'サイ・ヒーリング', pp:5,  type:'heal', pow:55,  lv:1,  who:'tokia',d:'なかま1人の HPを55かいふく'},
+  shield: {n:'サイ・シールド',  pp:6,  type:'buff', pow:0,   lv:6,  who:'tokia',d:'みんなの ぼうぎょが あがる'},
+  mheal:  {n:'メガヒーリング',  pp:12, type:'healA',pow:60,  lv:10, who:'tokia',d:'なかまぜんいんの HPかいふく'},
+  bark:   {n:'びりびりボイス',  pp:3,  type:'debuf',pow:0,   lv:1,  who:'kota', d:'ほえて 敵ぜんたいの ぼうぎょダウン'},
+  rush:   {n:'いなずまダッシュ', pp:6,  type:'atk1', pow:2.6, lv:8,  who:'kota', d:'黒いいなずまと かす とっしん'},
+};
+
+/* ---------------- 敵 ---------------- */
+const FOES = {
+  hato:   {n:'イラつきハト',     e:'🐦', hp:16,  atk:7,  def:2,  spd:5,  exp:5,   g:8},
+  slug:   {n:'ごきげんナメクジ', e:'🐌', hp:14,  atk:5,  def:1,  spd:2,  exp:4,   g:6},
+  chari:  {n:'あばれじてんしゃ', e:'🚲', hp:24,  atk:10, def:3,  spd:7,  exp:9,   g:14},
+  crow:   {n:'あばれガラス',     e:'🦅', hp:70,  atk:12, def:4,  spd:8,  exp:40,  g:60,  boss:1},
+  kinoko: {n:'おしゃべりキノコ', e:'🍄', hp:22,  atk:9,  def:3,  spd:4,  exp:8,   g:12},
+  risu:   {n:'けんかっぱやリス', e:'🐿️', hp:26,  atk:11, def:4,  spd:9,  exp:11,  g:15},
+  boar:   {n:'もりのぬし キバまる', e:'🐗', hp:130, atk:16, def:6, spd:6, exp:90, g:140, boss:1},
+  sarari: {n:'つかれたサラリーマン', e:'🕴️', hp:34, atk:13, def:5, spd:5, exp:15, g:30},
+  kobun:  {n:'チンピラのこぶん', e:'🧢', hp:38,  atk:15, def:6,  spd:7,  exp:18,  g:35},
+  ginji:  {n:'サングラスのギンジ', e:'😎', hp:190, atk:20, def:8, spd:9, exp:160, g:280, boss:1},
+  kani:   {n:'はしゃぎガニ',     e:'🦀', hp:40,  atk:16, def:10, spd:5,  exp:22,  g:34},
+  kamome: {n:'ヤミツキカモメ',   e:'🕊️', hp:36,  atk:18, def:5,  spd:11, exp:24,  g:36},
+  ika:    {n:'ボスゲソ',         e:'🦑', hp:260, atk:24, def:10, spd:8,  exp:260, g:420, boss:1},
+  bat:    {n:'ねぼけコウモリ',   e:'🦇', hp:42,  atk:20, def:7,  spd:13, exp:30,  g:40},
+  golem:  {n:'いしころゴーレム', e:'🪨', hp:60,  atk:22, def:16, spd:3,  exp:42,  g:55},
+  dragon: {n:'ねぼけドラゴン',   e:'🐉', hp:380, atk:30, def:13, spd:10, exp:500, g:700, boss:1},
+  kakera: {n:'ノイズのかけら',   e:'👾', hp:70,  atk:26, def:11, spd:12, exp:60,  g:70},
+  noise:  {n:'こころを たべるもの ノイズ', e:'🌀', hp:9999, atk:34, def:99, spd:15, exp:0, g:0, boss:1, final:1},
+};
+
+/* ---------------- マップ ---------------- */
+/* 凡例: .草 F花 =道 T/t木 ~水 M岩 R屋根 W壁 D/Eドア b砂 C洞窟床 c洞窟壁 n闇床 N闇壁 */
+const MAPS = {
+town: { name:'ひだまりタウン', enc:null,
+ grid:[
+  "TTTTTTT==TTTTTTT",
+  "T..F...==...F..T",
+  "T.RRR..==..RRR.T",
+  "T.RDR..==..RER.T",
+  "T..=...==...=..T",
+  "T..==========..T",
+  "T..=...==..F...T",
+  "T..=.TT==......T",
+  "T..=.TT==..~~..T",
+  "T..======..~~..T",
+  "T..F...==......T",
+  "T......==..T...T",
+  "T..F...==....F.T",
+  "TTTTTTTTTTTTTTTT"],
+ doors:[{x:3,y:3,to:'home',tx:4,ty:4},{x:12,y:3,to:'shop1',tx:4,ty:4}],
+ exits:[{side:'n',min:7,max:8,to:'urayama',tx:0,ty:10,keepX:true}],
+},
+home: { name:'るいのいえ', enc:null, indoor:1,
+ grid:[
+  "WWWWWWWWW",
+  "WiiiiiiiW",
+  "WiiiiiiiW",
+  "WiiiiiiiW",
+  "WiiiiiiiW",
+  "WWWWDWWWW"],
+ doors:[{x:4,y:5,to:'town',tx:3,ty:4}],
+ exits:[],
+},
+shop1: { name:'タウンのみせ', enc:null, indoor:1,
+ grid:[
+  "WWWWWWWWW",
+  "WiiiiiiiW",
+  "WiiiiiiiW",
+  "WiiiiiiiW",
+  "WiiiiiiiW",
+  "WWWWDWWWW"],
+ doors:[{x:4,y:5,to:'town',tx:12,ty:4}],
+ exits:[],
+},
+urayama: { name:'うらやま', enc:{rate:.07,groups:[['hato'],['slug'],['hato','slug'],['chari']]},
+ grid:[
+  "MMMMMMMMMMMMMMMM",
+  "M......M...F...M",
+  "M.MM......MM...M",
+  "M....MMM......MM",
+  "MM.......M.....M",
+  "M...MM...M.MM..M",
+  "M.M......M......",
+  "M.M..MMM....MM.M",
+  "M......M.......M",
+  "M.MM...M..MM...M",
+  "M.......=......M",
+  "MMMMMMM==MMMMMMM"],
+ doors:[],
+ exits:[{side:'s',min:7,max:8,to:'town',tx:0,ty:1,keepX:true},
+        {side:'e',min:6,max:6,to:'forest',tx:1,ty:4}],
+},
+forest: { name:'きたのもり', enc:{rate:.08,groups:[['kinoko'],['risu'],['kinoko','risu'],['slug','slug'],['risu','risu']]},
+ grid:[
+  "TTTTTTTTTTTTTTTTTT",
+  "T....T...T.....F.T",
+  "T.TT...T....TT...T",
+  "T....T...T.......T",
+  "......T....T.TT..T",
+  "T.T....T.........T",
+  "T...TT....T..TT..T",
+  "T.T......T........",
+  "T...T..TT....T...T",
+  "T.TT......TT.....T",
+  "T....T.......T.F.T",
+  "TTTTTTTTTTTTTTTTTT"],
+ doors:[],
+ exits:[{side:'w',min:4,max:4,to:'urayama',tx:14,ty:6},
+        {side:'e',min:7,max:7,to:'kazemachi',tx:1,ty:7}],
+},
+kazemachi: { name:'カゼマチシティ',
+ enc:{rate:.06,groups:[['sarari'],['kobun'],['chari','chari'],['kobun','sarari']],off:f=>f.b_ginji},
+ grid:[
+  "TTTTTTTTTTTTTTTTTT",
+  "T..RRR...F.RRR...T",
+  "T..RRR.....RER...T",
+  "T...=.......=....T",
+  "T...=========....T",
+  "T...=...F...=....T",
+  "T.F.=..RRR..=..F.T",
+  "....=..RRR..=....T",
+  "T...=..RRR..=....T",
+  "T...==========...T",
+  "T......F....=....T",
+  "T..T........=..T.T",
+  "T.....F.....=....T",
+  "TTTTTTTTTTTT==TTTT"],
+ doors:[{x:12,y:2,to:'shop2',tx:4,ty:4}],
+ exits:[{side:'w',min:7,max:7,to:'forest',tx:16,ty:7},
+        {side:'s',min:12,max:13,to:'beach',tx:0,ty:1,keepX:true}],
+},
+shop2: { name:'カゼマチのみせ', enc:null, indoor:1,
+ grid:[
+  "WWWWWWWWW",
+  "WiiiiiiiW",
+  "WiiiiiiiW",
+  "WiiiiiiiW",
+  "WiiiiiiiW",
+  "WWWWDWWWW"],
+ doors:[{x:4,y:5,to:'kazemachi',tx:12,ty:3}],
+ exits:[],
+},
+beach: { name:'しおかぜビーチ', enc:{rate:.07,groups:[['kani'],['kamome'],['kani','kamome'],['sarari','kamome']]},
+ grid:[
+  "TTTTTTTTTTTT==TTTT",
+  "T...........=...FT",
+  "T....bbbbbbbbbb..T",
+  "TbbbbbbbbbbbbbbbMM",
+  "TbbbbbbbbbbbbbbbbD",
+  "TbbbbbbbbbbbbbbbMM",
+  "TbbbbbbbbbbbbbbbbT",
+  "Tb~~bbbbbbbbb~~bbT",
+  "T~~~~~bbbbb~~~~~~T",
+  "T~~~~~~~~~~~~~~~~T",
+  "T~~~~~~~~~~~~~~~~T",
+  "TTTTTTTTTTTTTTTTTT"],
+ doors:[{x:17,y:4,to:'cave',tx:1,ty:11}],
+ exits:[{side:'n',min:12,max:13,to:'kazemachi',tx:0,ty:12,keepX:true}],
+},
+cave: { name:'ねむりのどうくつ', enc:{rate:.09,groups:[['bat'],['golem'],['bat','bat'],['bat','golem']]},
+ grid:[
+  "cccccccccccccccc",
+  "cCCCCcCCCCCCCCCc",
+  "cCccCcCccccCCcCc",
+  "cCCCCCCCCccCCCCc",
+  "ccccCccCCCCCCccc",
+  "cCCCCCCCcccCCCCc",
+  "cCcccCccCCCCCcCc",
+  "cCCCCCCCCCcCCCCc",
+  "cCccCcccCCCCcCCc",
+  "cCCCCCCCCCCCCCCc",
+  "ccCccCccCcccCcCc",
+  "cCCCCCCCCCCCCCCc",
+  "cDCCCCcCCCcCCCCc",
+  "cccccccccccccccc"],
+ doors:[{x:1,y:12,to:'beach',tx:16,ty:4}],
+ exits:[],
+},
+noise: { name:'ノイズのす', enc:{rate:.08,groups:[['kakera'],['kakera','kakera']],off:f=>f.clear},
+ grid:[
+  "NNNNNNNNNNNNNN",
+  "NnnnnnnnnnnnnN",
+  "NnNNnnNNnnNNnN",
+  "NnnnnnnnnnnnnN",
+  "NnnNNnnnnNNnnN",
+  "NnnnnnnnnnnnnN",
+  "NnNNnnNNnnNNnN",
+  "NnnnnnnnnnnnnN",
+  "NnnnnnnnnnnnnN",
+  "NnNNnnnnnnNNnN",
+  "NnnnnnnnnnnnnN",
+  "NNNNNNNNNNNNNN"],
+ doors:[],
+ exits:[],
+},
+};
+
+/* ---------------- キャラクター ---------------- */
+const CHARDEF = {
+  rui:  {n:'るい',   e:'👧', base:{hp:34,pp:12,atk:7,def:5,spd:6}, grow:{hp:7,pp:3,atk:2.4,def:1.6,spd:1.2}},
+  tokia:{n:'とき', e:'🧒', base:{hp:28,pp:16,atk:5,def:5,spd:5}, grow:{hp:6,pp:4,atk:1.6,def:1.5,spd:1.2}},
+  kota: {n:'琥太郎', e:'🐶', base:{hp:32,pp:8, atk:8,def:4,spd:9}, grow:{hp:7,pp:2,atk:2.6,def:1.2,spd:1.8}},
+};
+const expToNext = lv => lv*lv*6;
+function makeChar(id){
+  const d = CHARDEF[id], b = d.base;
+  return {id, n:d.n, e:d.e, lv:1, exp:0, next:expToNext(1),
+          hp:b.hp, mhp:b.hp, thp:b.hp, pp:b.pp, mpp:b.pp,
+          atk:b.atk, def:b.def, spd:b.spd};
+}
+function psiList(c, fieldOnly){
+  return Object.entries(PSI).filter(([k,p]) =>
+    p.who===c.id && c.lv>=p.lv && (!fieldOnly || p.type==='heal'||p.type==='healA'));
+}
+
+/* ---------------- 状態 ---------------- */
+let S = null;
+function newState(){
+  return { map:'home', x:4, y:3, dir:'down', money:80, steps:0,
+           flags:{}, inv:{onigiri:2, herb:1}, trail:[],
+           party:[makeChar('rui')] };
+}
+const F = () => S.flags;
+const mc = () => ['m1','m2','m3','m4','m5','m6','m7','m8'].filter(k=>F()[k]).length;
+
+/* ---------------- セーブ ---------------- */
+/* セーブ先の自動判定:
+   - Claudeアプリ/Claude.ai内 → window.storage (アカウントに紐づくクラウド保存)
+   - Safari等の単体ブラウザ   → localStorage (端末内保存) にフォールバック */
+function hasWS(){ try{ return !!(window.storage && window.storage.set); }catch(e){ return false; } }
+async function saveGame(){
+  const data = JSON.stringify(S);
+  try{
+    if(hasWS()){ const r = await window.storage.set('em_save', data); return !!r; }
+    localStorage.setItem('em_save', data); return true;
+  }catch(e){ return false; }
+}
+async function loadGame(){
+  try{
+    let raw = null;
+    if(hasWS()){ const r = await window.storage.get('em_save'); raw = r && r.value; }
+    else raw = localStorage.getItem('em_save');
+    const sv = raw ? JSON.parse(raw) : null;
+    if(sv && sv.party) sv.party.forEach(c=>{ if(CHARDEF[c.id]){ c.n = CHARDEF[c.id].n; c.e = CHARDEF[c.id].e; } if(c.thp===undefined) c.thp = c.hp; });
+    return sv;
+  }catch(e){ return null; }
+}
+
+/* ---------------- 入力 ---------------- */
+const held = {up:0,down:0,left:0,right:0};
+let aHandlers = [];
+function onceA(fn){ aHandlers.push(fn); }
+function fireA(){ const h = aHandlers.splice(0); h.forEach(f=>f()); }
+function bindHold(id, key){
+  const el = $(id);
+  const on  = e=>{e.preventDefault(); held[key]=1; el.classList.add('on');};
+  const off = e=>{e.preventDefault(); held[key]=0; el.classList.remove('on');};
+  el.addEventListener('touchstart',on,{passive:false});
+  el.addEventListener('touchend',off); el.addEventListener('touchcancel',off);
+  el.addEventListener('mousedown',on); el.addEventListener('mouseup',off); el.addEventListener('mouseleave',off);
+}
+bindHold('d-up','up'); bindHold('d-down','down'); bindHold('d-left','left'); bindHold('d-right','right');
+let aDown = false, bDown = false, talkCool = 0;
+function bindBtn(id, fn){
+  const el = $(id);
+  const h = e=>{e.preventDefault(); ac(); fn();};
+  el.addEventListener('touchstart',h,{passive:false});
+  el.addEventListener('mousedown',h);
+}
+bindBtn('btnA', ()=>{ aDown=true; if(!navPick()) fireA(); });
+bindBtn('btnB', ()=>{ bDown=true; if(!navCancel()) onB(); });
+
+/* ---------------- カーソルナビ（十字キー＋A/Bで全UI操作） ---------------- */
+let NAV = null;
+function navVisible(el){ if(!el || !el.isConnected) return false;
+  const r = el.getBoundingClientRect(); return r.width>0 && r.height>0; }
+function navStale(){ return NAV && !navVisible(NAV.els[NAV.idx]); }
+function navSet(els, opts={}){
+  navClear();
+  els = [...els];
+  if(!els.length) return;
+  NAV = { els, idx:Math.min(opts.idx||0, els.length-1), cols:opts.cols||1, onCancel:opts.onCancel||null };
+  navPaint();
+}
+function navPaint(){ NAV.els.forEach((el,i)=>el.classList.toggle('nav', i===NAV.idx)); }
+function navClear(){ if(NAV) NAV.els.forEach(el=>el.classList.remove('nav')); NAV = null; }
+function navMove(dx, dy){
+  if(!NAV) return false;
+  if(navStale()){ navClear(); return false; }
+  const n = NAV.els.length;
+  NAV.idx = (((NAV.idx + dx + dy*NAV.cols) % n) + n) % n;
+  navPaint(); SE.move(); return true;
+}
+function navPick(){
+  if(!NAV) return false;
+  if(navStale()){ navClear(); return false; }
+  const el = NAV.els[NAV.idx]; navClear();
+  el.dispatchEvent(new MouseEvent('mousedown', {cancelable:true, bubbles:false}));
+  return true;
+}
+function navCancel(){
+  if(!NAV) return false;
+  if(navStale()){ navClear(); return false; }
+  if(!NAV.onCancel) return false;
+  const f = NAV.onCancel; navClear(); SE.ok(); f(); return true;
+}
+setInterval(()=>{
+  if(!NAV) return;
+  if(held.up){ navMove(0,-1); held.up=0; }
+  else if(held.down){ navMove(0,1); held.down=0; }
+  else if(held.left){ navMove(-1,0); held.left=0; }
+  else if(held.right){ navMove(1,0); held.right=0; }
+}, 90);
+window.addEventListener('keydown',e=>{
+  if(e.repeat) return;
+  if(e.key==='ArrowUp')held.up=1; if(e.key==='ArrowDown')held.down=1;
+  if(e.key==='ArrowLeft')held.left=1; if(e.key==='ArrowRight')held.right=1;
+  if(e.key==='z'||e.key===' '||e.key==='Enter'){ac(); if(e.repeat) return; if(!navPick()){ fireA(); aDown = true; }}
+  if(e.key==='x'||e.key==='Escape'){ac(); if(!navCancel()) onB();}
+  if(e.key==='x'||e.key==='Escape'){ac(); onB();}
+});
+window.addEventListener('keyup',e=>{
+  if(e.key==='ArrowUp')held.up=0; if(e.key==='ArrowDown')held.down=0;
+  if(e.key==='ArrowLeft')held.left=0; if(e.key==='ArrowRight')held.right=0;
+});
+$('dialog').addEventListener('touchstart',e=>{e.preventDefault(); fireA();},{passive:false});
+$('dialog').addEventListener('mousedown',e=>{e.preventDefault(); fireA();});
+
+/* ---------------- 会話システム ---------------- */
+let busy = false;
+function waitA(){ return new Promise(res=>onceA(res)); }
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+async function typeText(el, html){
+  el.innerHTML = '';
+  const tmp = document.createElement('div'); tmp.innerHTML = html;
+  const full = html;
+  let i = 0, done = false, plain = tmp.textContent;
+  // 1文字ずつ(タグはまとめて)
+  const reveal = async()=>{
+    let out = '', n = 0, target = 0;
+    while(!done){
+      target++;
+      // htmlを安全に部分表示: タグはスキップして一括
+      let shown = '', cnt = 0, j = 0;
+      while(j < full.length && cnt < target){
+        if(full[j] === '<'){ const k = full.indexOf('>', j); shown += full.slice(j, k+1); j = k+1; }
+        else { shown += full[j]; j++; cnt++; }
+      }
+      el.innerHTML = shown;
+      if(cnt >= plain.length){ done = true; break; }
+      await sleep(22);
+    }
+    el.innerHTML = full;
+  };
+  let skip = false;
+  onceA(()=>{ skip = true; done = true; });
+  await reveal();
+  if(!skip) return; // すでに全表示
+}
+async function dialog(lines){
+  busy = true;
+  const box = $('dialog'), txt = $('dtext');
+  box.style.display = 'block';
+  for(const line of lines){
+    SE.ok();
+    await typeText(txt, line);
+    txt.innerHTML = line;
+    await waitA();
+  }
+  box.style.display = 'none';
+  busy = false;
+  aDown = false;
+  talkCool = performance.now() + 300; // 会話直後の再トークを防ぐ
+}
+function say(name, text){ return `<span class="name">${name}</span><br>${text}`; }
+async function choice(opts){
+  busy = true;
+  const c = $('choices'); c.innerHTML = ''; c.style.display = 'block';
+  let sel = 0;
+  const rows = opts.map((o,i)=>{
+    const d = document.createElement('div'); d.textContent = o;
+    d.addEventListener('touchstart',e=>{e.preventDefault(); sel=i; upd(); pick();},{passive:false});
+    d.addEventListener('mousedown',e=>{e.preventDefault(); sel=i; upd(); pick();});
+    c.appendChild(d); return d;
+  });
+  const upd = ()=>rows.forEach((r,i)=>r.classList.toggle('sel', i===sel));
+  upd();
+  let resolve; const p = new Promise(r=>resolve=r);
+  let alive = true;
+  const pick = ()=>{ if(!alive) return; alive=false; SE.ok(); c.style.display='none'; busy=false; resolve(sel); };
+  const keyloop = setInterval(()=>{
+    if(!alive){ clearInterval(keyloop); return; }
+    if(held.up){ sel=(sel+opts.length-1)%opts.length; upd(); held.up=0; }
+    if(held.down){ sel=(sel+1)%opts.length; upd(); held.down=0; }
+  }, 80);
+  onceA(()=>{}); // 直前のA残り消化
+  const arm = ()=>onceA(()=>{ if(alive) pick(); else arm(); });
+  setTimeout(arm, 100);
+  return p;
+}
+
+/* ---------------- メロディ入手 ---------------- */
+async function melodyGet(key){
+  F()[key] = 1;
+  const n = mc();
+  busy = true;
+  playMelody(n);
+  await sleep(n*320+300);
+  busy = false;
+  await dialog([`<b>♪ メロディを おもいだした！</b><br>（${n} / 8）`]);
+  if(n===8) return;
+  const hints = {1:'つぎの メロディは <b>きたのもり</b>の おくから きこえる…',
+    2:'つぎは ひがしの <b>カゼマチシティ</b>だ。にぎやかな おとに まじって…',
+    3:'まちの どこかで <b>みずの おと</b>が うたっている…',
+    4:'みなみの <b>しおかぜビーチ</b>。なみの おとの むこうに…',
+    5:'ビーチの ひがしの <b>どうくつ</b>。ちいさな ひかりが よんでいる…',
+    6:'おなじ どうくつの <b>おおきな クリスタル</b>が ねむっている…',
+    7:'…さいごの メロディは <b>「ほしのこえ」</b>が しっている。どうくつの おくへ。'};
+  if(hints[n]) await dialog([say('ほしのこえ', hints[n])]);
+}
+
+/* ---------------- 回復ヘルパ ---------------- */
+function healAll(){ S.party.forEach(c=>{c.hp=c.mhp; c.thp=c.mhp; c.pp=c.mpp;}); }
+
+/* ---------------- ショップ ---------------- */
+async function shop(stock, keeper){
+  await dialog([say(keeper,'いらっしゃい！ なにに する？')]);
+  while(true){
+    const opts = stock.map(k=>`${ITEMS[k].n} ${ITEMS[k].price}えん`).concat(['やめる']);
+    const sel = await choice(opts);
+    if(sel === stock.length){ await dialog([say(keeper,'まいど！ きをつけてな。')]); return; }
+    const k = stock[sel], it = ITEMS[k];
+    await dialog([`${it.n}：${it.d}`]);
+    const ok = await choice(['かう','やめとく']);
+    if(ok===0){
+      if(S.money < it.price){ await dialog([say(keeper,'おかね たりてへんで？')]); continue; }
+      S.money -= it.price; S.inv[k] = (S.inv[k]||0)+1; SE.heal();
+      await dialog([`${it.n}を てにいれた！`]);
+    }
+  }
+}
+
+/* ---------------- パパ電話 ---------------- */
+async function papaPhone(){
+  await dialog([say('パパ','「もしもし。…おお、るいか！ がんばってるな。」'),
+                say('パパ','「ぼうけんの きろくを つけておいたぞ。」')]);
+  const ok = await saveGame();
+  await dialog([ ok ? '<b>セーブしました！</b>' : 'セーブに しっぱいした…（つうしんエラー）']);
+  const amt = S.party[0].lv*15 + 30;
+  S.money += amt; SE.heal();
+  await dialog([say('パパ','「それと おこづかいを <b>'+amt+'えん</b> ふりこんでおいた。むりは するなよ。」'),
+                say('パパ','「パパは いま とおい まちで しゅっちょうちゅうだ。まどの そとを ノイズが とおっていったが、てを ふったら にげていったよ。」'),
+                say('パパ','「ママと 琥太郎にも よろしくな。ガチャン…」')]);
+}
+
+/* ---------------- NPC ---------------- */
+const NPCS = [
+ /* --- いえ --- */
+ {map:'home',x:2,y:2,e:'👩',name:'ママ', talk:async()=>{
+   healAll(); SE.heal();
+   const lines = [say('ママ','「おかえりなさい！ ごはん できてるわよ。」'),
+                  '<b>ママの てりょうりだ！ みんなの HPとPPが ぜんかいふく！</b>'];
+   if(F().clear) lines.push(say('ママ','「せかいを すくった ヒーローでも、うちでは わたしの こどもよ。」'));
+   else if(mc()===0) lines.push(say('ママ','「うらやまに きをつけてね。タウンの きたから いけるわよ。」'));
+   else lines.push(say('ママ','「メロディ、もう '+mc()+'つも あつめたの？ すごいじゃない！」'));
+   await dialog(lines);
+ }},
+ {map:'home',x:7,y:1,e:'🛏️',name:'ベッド', talk:async()=>{
+   const s = await choice(['やすむ','やすまない']);
+   if(s===0){ healAll(); SE.heal(); await dialog(['ぐっすり ねむった…<br><b>HPとPPが ぜんかいふく！</b>']); }
+ }},
+ {map:'home',x:1,y:1,e:'📺',name:'テレビ', talk:async()=>{
+   const n = mc();
+   const news = n===0 ? '「ゆうべ うらやまに いんせき らっか。なお いんせきは “てれかくし” のため コメントを きょひ しています」'
+     : n<3 ? '「カゼマチシティで “おとが おもい” との つうほう あいつぐ。せんもんかは “きの せいでしょう” と」'
+     : n<5 ? '「しおかぜビーチに きょだいイカ。なみのりが うますぎて かんきゃくから はくしゅが おきる いっぱんも」'
+     : n<8 ? '「ぜんこくで なぞの “ノイズ” を かんそく。「みていると なぜか なきたくなる」 との こえ おおく」'
+     : '「せかいに へいわ もどる。なお なぞの かぞくは “ごはんの じかんなので” と いいのこし さっていきました」';
+   await dialog([say('テレビ', news)]);
+ }},
+ {map:'home',x:5,y:2,e:'🧒',name:'とき', hide:f=>f.tokia, talk:async()=>{}},
+
+ /* --- ひだまりタウン --- */
+ {map:'town',x:9,y:6,e:'🪧',name:'かんばん', talk:async()=>{
+   await dialog(['「ここは ひだまりタウン<br>　↑きた：うらやま<br>（すみに らくがき：“しあわせは あさごはんの においの なかに ある” ）」']);
+ }},
+ {map:'town',x:5,y:10,e:'🧓',name:'おじいさん', talk:async()=>{
+   await dialog([say('おじいさん', F().m1?'「こしは ぬけたが、ふしぎと きぶんは ええ。ほしの かけらを ふんだ せいかのう」':'「ゆうべ ほしが おちての。わしの ゆめにも おちてきて、“すまんな” と あやまって いきよった」')]);
+ }},
+ {map:'town',x:10,y:7,e:'👦',name:'おとこのこ', talk:async()=>{
+   await dialog([say('おとこのこ', F().kotaro?'「イヌが しゃべるなら、ぼくの きんぎょも そろそろ しゃべると おもうんだ。まいにち れんしゅう してる」':'「くろい イヌが うらやまへ ダッシュ！ あんなに はやい イヌ、はじめて みたよ！」')]);
+ }},
+ {map:'town',x:10,y:10,e:'📞',name:'でんわボックス', talk:papaPhone},
+ {map:'town',x:13,y:11,e:'👩‍🌾',name:'おばさん', talk:async()=>{
+   await dialog([say('おばさん','「カゼマチシティは もりを ぬけた ひがしよ。<br>とちゅうの きが たまに “こんにちは” って いうけど、わるいきじゃ ないから だいじょうぶ」')]);
+ }},
+
+ /* --- みせ --- */
+ {map:'shop1',x:4,y:1,e:'🧑‍🍳',name:'みせのひと', talk:()=>shop(['onigiri','herb','juice'],'みせのひと')},
+ {map:'shop2',x:4,y:1,e:'🧑‍🍳',name:'みせのひと', talk:()=>shop(['onigiri','herb','juice','bone','curry'],'みせのひと')},
+
+ /* --- うらやま --- */
+ {map:'urayama',x:9,y:1,e:'☄️',name:'いんせき', talk:async()=>{
+   if(!F().m1){
+     await dialog(['いんせきが ほんのり ひかっている…','どこからか <b>ちいさな メロディ</b>が きこえる…',
+                   'そのとき！ <b>あばれガラス</b>が いんせきを よこどりしようと おそいかかってきた！']);
+     const r = await battle(['crow']);
+     if(r!=='win') return;
+     await dialog(['いんせきに そっと ふれた……']);
+     await melodyGet('m1');
+     await dialog([say('？？？','「……きこえますか。わたしは <b>ほしのこえ</b>。」'),
+       say('ほしのこえ','「ちきゅうの こころが “ノイズ”に たべられようと しています。」'),
+       say('ほしのこえ','「<b>8つの メロディ</b>を あつめて、ちきゅうの うたを とりもどして……」'),
+       '……こえは きえた。あたりに しずけさが もどる。']);
+   } else {
+     await dialog(['いんせきは あたたかく ひかっている。']);
+   }
+ }},
+ {map:'urayama',x:10,y:1,e:'🐶',name:'琥太郎', hide:f=>!f.m1||f.kotaro, talk:async()=>{
+   await dialog([say('琥太郎','「ワン！ ワンワン！」'),'いんせきの ひかりが 琥太郎を ふわりと つつんだ……',
+     say('琥太郎','「ワン！……あれ？ ボク しゃべってる！？」'),
+     say('琥太郎','「いんせきの ちからだ！ ねえ、ボクも つれてって！ はなが きくから やくにたつよ！」'),
+     '<b>くろしばの 琥太郎が なかまに くわわった！</b>']);
+   S.party.push(makeChar('kota'));
+   const k = S.party[S.party.length-1];
+   while(k.lv < Math.max(1, S.party[0].lv-1)){ k.exp = 0; levelUp(k, true); }
+   k.hp = k.mhp; k.pp = k.mpp;
+   F().kotaro = 1; SE.lvup();
+ }},
+
+ /* --- きたのもり --- */
+ {map:'forest',x:8,y:3,e:'🐗',name:'キバまる', hide:f=>f.b_boar, talk:async()=>{
+   await dialog([say('キバまる','「ブモモ…！ きりかぶに ちかづくな！ ここは オレの ひるねスポットだ！」'),
+                 '<b>もりのぬし キバまるが おそいかかってきた！</b>']);
+   const r = await battle(['boar']);
+   if(r==='win'){ F().b_boar = 1;
+     await dialog([say('キバまる','「ブモ…つよいな……きりかぶ、ゆずってやる。たいせつに しろよ」'),
+                   'キバまるは もりの おくへ さっていった。']); }
+ }},
+ {map:'forest',x:8,y:2,e:'🪵',name:'おおきな きりかぶ', talk:async()=>{
+   if(!F().b_boar){ await dialog(['きりかぶの ほうから メロディが きこえる…でも キバまるが じゃまで ちかづけない。']); return; }
+   if(!F().m2){
+     await dialog(['きりかぶに みみを あてた……','とおい むかしの もりの うたが ひびいてくる。']);
+     await melodyGet('m2');
+   } else await dialog(['きりかぶは しずかに ねむっている。']);
+ }},
+ {map:'forest',x:15,y:10,e:'🐿️',name:'リス', talk:async()=>{
+   await dialog([say('リス','「カゼマチの ゲーセンまえ、こわい ひとたちが いるッス。でも あいさつ したら ちゃんと かえして くれたッス。なぞッス」')]);
+ }},
+
+ /* --- カゼマチシティ --- */
+ {map:'kazemachi',x:9,y:9,e:'😎',name:'ギンジ', hide:f=>f.b_ginji, talk:async()=>{
+   await dialog([say('ギンジ','「あ？ ガキと イヌが なんの ようだ。」'),
+     say('ギンジ','「この スピーカーは オレさまの もんだ。ばくおんで まちを そめてやるぜ！」'),
+     '<b>サングラスのギンジが ケンカを うってきた！</b>']);
+   const r = await battle(['ginji']);
+   if(r==='win'){ F().b_ginji = 1;
+     await dialog([say('ギンジ','「ま、まいった……。おまえら、ただの かぞくじゃねえな…」'),
+       say('ギンジ','「サングラス、おいてくぜ。オレは でなおす！」'),
+       'ギンジは こぶんを つれて はしりさった。まちが しずかに なった。']); }
+ }},
+ {map:'kazemachi',x:8,y:9,e:'🔊',name:'スピーカー', talk:async()=>{
+   if(!F().b_ginji){ await dialog(['ばくおんで なにも きこえない！ ギンジを どうにか しないと…']); return; }
+   if(!F().m3){
+     await dialog(['しずかに なった スピーカーから、やさしい ラジオの うたが ながれてきた……']);
+     await melodyGet('m3');
+   } else await dialog(['スピーカーは こきみよい おんがくを ながしている。']);
+ }},
+ {map:'kazemachi',x:9,y:5,e:'⛲',name:'ふんすい', talk:async()=>{
+   if(!F().b_ginji){ await dialog(['ふんすいの おとが チンピラの ばくおんに かきけされている…']); return; }
+   if(!F().m4){
+     await dialog(['みずおとに みみを すませた……','ぴちょん、ぴちょん。みずの つぶが ふしぎな リズムを きざむ。']);
+     await melodyGet('m4');
+   } else await dialog(['ふんすいが きらきら ひかっている。']);
+ }},
+ {map:'kazemachi',x:5,y:10,e:'📞',name:'でんわボックス', talk:papaPhone},
+ {map:'kazemachi',x:2,y:5,e:'👵',name:'おばあさん', talk:async()=>{
+   await dialog([say('おばあさん', F().b_ginji?'「しずかに なって、じぶんの しんぞうの おとが きこえるわぁ。げんきな しょうこね」':'「ばくおんで おちゃが ゆれて、こまかい もようが できるの。ちょっとだけ きれいなのよ」')]);
+ }},
+ {map:'kazemachi',x:6,y:10,e:'🧢',name:'こぶん', hide:f=>f.b_ginji, talk:async()=>{
+   await dialog([say('こぶん','「あ？ ギンジさんに ようか？ ……じつは オレ、おおきな おとが ちょっと にがてでよ。ナイショだぜ」')]);
+ }},
+ {map:'kazemachi',x:15,y:10,e:'🧑‍🎤',name:'バンドマン', talk:async()=>{
+   await dialog([say('バンドマン','「みなみの ビーチで でっかいイカが あばれてるらしいぜ。なんでも 8ビートで すみを はくんだと。リズムは わるくないらしい」')]);
+ }},
+
+ /* --- しおかぜビーチ --- */
+ {map:'beach',x:3,y:2,e:'🎣',name:'つりびと', talk:async()=>{
+   await dialog([say('つりびと', F().m5?'「カイガラの おと、わしも きいたで。ええ おとや…なみが はくしゅ しとった」':'「あの カイガラ、ええ おとが するんやけど、ボスゲソが ひるねに つかっとってな。おこすと きげんが わるいんや」')]);
+ }},
+ {map:'beach',x:6,y:6,e:'🐚',name:'おおきなカイガラ', talk:async()=>{
+   if(!F().m5){
+     await dialog(['カイガラに みみを あてようとした そのとき……','<b>ボスゲソが カイガラの なかから とびだしてきた！</b>']);
+     const r = await battle(['ika']);
+     if(r!=='win') return;
+     await dialog(['ボスゲソは すみを はいて うみへ にげていった。','あらためて カイガラに みみを あてた……']);
+     await melodyGet('m5');
+   } else await dialog(['カイガラから なみの こもりうたが きこえる。']);
+ }},
+ {map:'beach',x:12,y:2,e:'📞',name:'でんわボックス', talk:papaPhone},
+ {map:'beach',x:15,y:6,e:'🪧',name:'かんばん', talk:async()=>{
+   await dialog(['「→ひがし：ねむりのどうくつ<br>　ねるまえに セーブ すいしょう」']);
+ }},
+
+ /* --- ねむりのどうくつ --- */
+ {map:'cave',x:4,y:5,e:'💎',name:'ちいさなクリスタル', talk:async()=>{
+   if(!F().m6){
+     await dialog(['クリスタルが チリン…と なった。','と おもったら <b>ねぼけコウモリが ぶつかってきた！</b>']);
+     const r = await battle(['bat','bat']);
+     if(r!=='win') return;
+     await melodyGet('m6');
+   } else await dialog(['クリスタルが チリンチリンと なっている。']);
+ }},
+ {map:'cave',x:14,y:1,e:'🔮',name:'おおきなクリスタル', talk:async()=>{
+   if(!F().m7){
+     await dialog(['おおきな クリスタルの まえに たった。','クリスタルの なかで なにかが ねがえりを うった……',
+                   '<b>ねぼけドラゴンが めを さました！！</b>']);
+     const r = await battle(['dragon']);
+     if(r!=='win') return;
+     await dialog([say('ドラゴン','「……ふぁ。ひさしぶりに よく ねた。おまえたち、いい うでだ」'),
+                   say('ドラゴン','「クリスタルの うたを きいていけ。」')]);
+     await melodyGet('m7');
+   } else await dialog(['クリスタルの おくで ドラゴンが きもちよさそうに ねている。']);
+ }},
+ {map:'cave',x:13,y:11,e:'✨',name:'ほしのこえ', hide:f=>!f.m7, talk:async()=>{
+   await dialog([say('ほしのこえ','「よくぞ ここまで。さいごの メロディは <b>ノイズのす</b>に あります。」'),
+     say('ほしのこえ','「ノイズは こころを たべる もの。でも あなたたちには <b>かぞく</b>が ついている。」')]);
+   const s = await choice(['ノイズのすへ いく','まだ じゅんびする']);
+   if(s===0){ await fadeWarp('noise',7,10); await dialog(['<b>……くうきが ゆがんでいる。ここが ノイズのすだ。</b>']); }
+ }},
+ {map:'noise',x:4,y:9,e:'✨',name:'ほしのこえ', talk:async()=>{
+   const s = await choice(['どうくつへ もどる','ここに いる']);
+   if(s===0) await fadeWarp('cave',12,11);
+ }},
+ {map:'noise',x:7,y:3,e:'🎼',name:'メロディのさいだん', talk:async()=>{
+   if(F().clear){ await dialog(['さいだんは おだやかに ひかっている。ちきゅうの うたが きこえる。']); return; }
+   if(!F().m8){
+     await dialog(['さいだんに 7つの メロディが ひびきあう……','<b>さいごの ひとつが、こころの なかから あふれてきた。</b>',
+                   'それは ──「ただいま」と「おかえり」の うた。']);
+     await melodyGet('m8');
+     busy = true; playMelody(8); await sleep(3000); busy = false;
+     await dialog(['<b>8つの メロディが ひとつの うたに なった！</b>','……そのとき。そらが まっくらに なった。',
+       say('ノイズ','「ｺﾞｺﾞ…ｳﾀ…ｹｾ…ｺｺﾛ…ﾀﾍﾞﾙ……」'),
+       '<b>こころを たべるもの「ノイズ」が あらわれた！！</b>','メロディが みんなを つつむ…… <b>HPとPPが ぜんかいふく！</b>']);
+     healAll();
+     const r = await battle(['noise'], {final:true});
+     if(r==='win') await ending();
+   }
+ }},
+];
+
+/* ---------------- レベルアップ ---------------- */
+function levelUp(c, silent){
+  const g = CHARDEF[c.id].grow;
+  c.lv++; c.next = expToNext(c.lv);
+  c.mhp += g.hp; c.mpp = Math.round(c.mpp + g.pp);
+  c.atk = +(c.atk + g.atk).toFixed(1); c.def = +(c.def + g.def).toFixed(1); c.spd = +(c.spd + g.spd).toFixed(1);
+  c.mhp = Math.round(c.mhp);
+  c.hp = Math.min(c.mhp, c.hp + g.hp); c.pp = Math.min(c.mpp, c.pp + g.pp);
+  c.thp = c.hp;
+  if(!silent) SE.lvup();
+}
+
+/* ---------------- 描画 ---------------- */
+const TILE_C = {
+  '.':'#6cbf45','F':'#6cbf45','=':'#e0cf96','T':'#6cbf45','t':'#6cbf45',
+  '~':'#4a9ce8','M':'#9a8a68','R':'#c85048','W':'#e8d8b8','D':'#e8d8b8','E':'#e8d8b8',
+  'b':'#efe2ae','C':'#5a4a66','c':'#2e2440','i':'#caa878','n':'#3a2050','N':'#16092a',
+};
+const TILE_E = {'T':'🌲','t':'🌳','F':'🌼','M':'⛰️','D':'🚪','E':'🚪'};
+const SOLID = new Set(['T','t','~','M','R','W','c','N']);
+let frame = 0;
+
+/* ---------------- ドット絵スプライト ---------------- */
+const PIX = {
+ rui:{ pal:{K:'#1a1a1a',r:'#e03050',R:'#d83434',S:'#f8c89c',Y:'#f4c430',B:'#2858c8',W:'#fff'},
+  down:[
+   '................',
+   '....KKKKKKKK....',
+   '..rrKKKKKKKKK...',
+   '.rrKKKKKKKKKKK..',
+   '..KKSSSSSSSSKK..',
+   '..KSSKSSSSKSSK..',
+   '..KSSSSSSSSSSK..',
+   '...SSSSSSSSSS...',
+   '....YYYYYYYY....',
+   '...SYYYYYYYYS...',
+   '...SBBBBBBBBS...',
+   '....YYYYYYYY....',
+   '...RRRRRRRRRR...',
+   '..RRRRRRRRRRRR..',
+   '....SS....SS....',
+   '...rrr....rr....'],
+  up:[
+   '................',
+   '....KKKKKKKK....',
+   '..rrKKKKKKKKK...',
+   '.rrKKKKKKKKKKK..',
+   '..KKKKKKKKKKKK..',
+   '..KKKKKKKKKKKK..',
+   '..KKKKKKKKKKKK..',
+   '...KKKKKKKKKK...',
+   '....YYYYYYYY....',
+   '...SYYYYYYYYS...',
+   '...SBBBBBBBBS...',
+   '....YYYYYYYY....',
+   '...RRRRRRRRRR...',
+   '..RRRRRRRRRRRR..',
+   '....SS....SS....',
+   '....rr....rrr...'],
+  side:[
+   '................',
+   '.....KKKKKK.....',
+   '....KKKKKKKK....',
+   '...KKKKKKKKrr...',
+   '...KKKKKKKKrr...',
+   '...SSSSKKKKK....',
+   '...SKSSKKKKK....',
+   '....SSSKKKK.....',
+   '.....YYYYYY.....',
+   '....SYYYYYY.....',
+   '....SBBBBBB.....',
+   '.....YYYYYY.....',
+   '....RRRRRRRR....',
+   '...RRRRRRRRR....',
+   '.....SS.SS......',
+   '....rrr.rr......']},
+ tokia:{ pal:{K:'#1a1a1a',H:'#6a4420',G:'#2a9a8a',B:'#2858c8',S:'#f8c89c',Q:'#5a3a20',W:'#fff'},
+  down:[
+   '................',
+   '....HHHHHHHH....',
+   '...HHHHHHHHHH...',
+   '..HHHHHHHHHHHH..',
+   '..HHSSSSSSSSHH..',
+   '..HSSKSSSSKSSH..',
+   '...SSSSSSSSSS...',
+   '....SSSSSSSS....',
+   '....GGGGGGGG....',
+   '...SGGGGGGGGS...',
+   '...SGGGGGGGGS...',
+   '....GGGGGGGG....',
+   '....BBBBBBBB....',
+   '....BB...BBB....',
+   '....SS....SS....',
+   '...QQQ....QQ....'],
+  up:[
+   '................',
+   '....HHHHHHHH....',
+   '...HHHHHHHHHH...',
+   '..HHHHHHHHHHHH..',
+   '..HHHHHHHHHHHH..',
+   '..HHHHHHHHHHHH..',
+   '...HHHHHHHHHH...',
+   '....HHHHHHHH....',
+   '....GGGGGGGG....',
+   '...SGGGGGGGGS...',
+   '...SGGGGGGGGS...',
+   '....GGGGGGGG....',
+   '....BBBBBBBB....',
+   '....BBB...BB....',
+   '....SS....SS....',
+   '....QQ....QQQ...'],
+  side:[
+   '................',
+   '.....HHHHHH.....',
+   '....HHHHHHHH....',
+   '...HHHHHHHHHH...',
+   '...HHHHHHHHHH...',
+   '...SSSSHHHHH....',
+   '...SKSSHHHHH....',
+   '....SSSHHHH.....',
+   '.....GGGGGG.....',
+   '....SGGGGGG.....',
+   '....SGGGGGG.....',
+   '.....GGGGGG.....',
+   '.....BBBBB......',
+   '.....BB.BB......',
+   '.....SS.SS......',
+   '....QQQ.QQ......']},
+ kota:{ pal:{K:'#262220',C:'#e8d0a0',W:'#fff',R:'#c84040'},
+  down:[
+   '................',
+   '................',
+   '...KK.....KK....',
+   '..KKKK...KKKK...',
+   '..KKKKKKKKKKK...',
+   '..KKKKKKKKKKK...',
+   '..KKWKKKKKWKK...',
+   '..KKKCCCCCKKK...',
+   '...KCCKKCCCK....',
+   '...KKCCCCCKK....',
+   '..KKKKKKKKKKK...',
+   '..KCCKKKKKCCK...',
+   '..KCCKKKKKCCK...',
+   '..KKK.....KKK...',
+   '..KKK.....KKKK..',
+   '..CC.......CC...'],
+  up:[
+   '................',
+   '................',
+   '...KK.....KK....',
+   '..KKKK...KKKK...',
+   '..KKKKKKKKKKK...',
+   '..KKKKKKKKKKK...',
+   '..KKKKKCCKKKK...',
+   '..KKKKCCCCKKK...',
+   '..KKKKKCCKKKK...',
+   '..KKKKKKKKKKK...',
+   '..KKKKKKKKKKK...',
+   '..KKKKKKKKKKK...',
+   '..KKKKKKKKKKK...',
+   '..KKK.....KKK...',
+   '..KKKK....KKK...',
+   '...CC......CC...'],
+  side:[
+   '................',
+   '................',
+   '..KK........KK..',
+   '..KKK......KKKK.',
+   '.KKKKK....KKKCC.',
+   '.KKWKK....KKKK..',
+   '.KKKKKKKKKKKK...',
+   'KKCKKKKKKKKKK...',
+   'KCCKKKKKKKKKK...',
+   '.KKKKKKKKKKKK...',
+   '.KCCKKKKKKKKK...',
+   '..KK..KK..KK....',
+   '..KK..KK..KK....',
+   '..KK..KK..KKK...',
+   '..CC..CC..CC....',
+   '................']},
+};
+const SPRC = {};
+function buildSprite(id, key, flip){
+  const d = PIX[id], rows = d[key];
+  const cv = document.createElement('canvas'); cv.width = 32; cv.height = 32;
+  const c = cv.getContext('2d');
+  for(let y=0;y<16;y++) for(let x=0;x<16;x++){
+    const ch = rows[y][flip ? 15-x : x];
+    const col = d.pal[ch];
+    if(col){ c.fillStyle = col; c.fillRect(x*2, y*2, 2, 2); }
+  }
+  return cv;
+}
+function spr(id, dir, step){
+  if(!PIX[id]) return null;
+  let key = (dir==='left'||dir==='right') ? 'side' : dir;
+  let flip = (dir==='right');
+  if((dir==='up'||dir==='down') && step) flip = !flip;   // 足の左右で歩き表現
+  const ck = id+'_'+key+'_'+(flip?1:0);
+  return SPRC[ck] || (SPRC[ck] = buildSprite(id, key, flip));
+}
+function sprIcon(id){
+  const cv = spr(id, 'down', false);
+  return cv ? `<img class="spi" src="${cv.toDataURL()}" alt="">` : '';
+}
+
+/* ---------------- てきの ドット絵 ---------------- */
+const FOEPIX = {
+ hato:{ pal:{K:'#2a2c34',G:'#b0b6c2',g:'#828a98',Y:'#e8b030',E:'#d83030'}, rows:[
+  '................',
+  '......gggg......',
+  '.....gGGGGg.....',
+  '....gGGGGGGg....',
+  '....GGGGGGGG....',
+  '...GGEGGGGEGG...',
+  '...GGGGGGGGGG...',
+  '...GGGGYYGGGG...',
+  '..gGGGGGGGGGGg..',
+  '..GGGGGGGGGGGG..',
+  '.gGGGGGGGGGGGGg.',
+  '.gGGGGGGGGGGGGg.',
+  '..GGGGGGGGGGGG..',
+  '...gg......gg...',
+  '...KK......KK...',
+  '................']},
+ slug:{ pal:{G:'#5ab84a',g:'#3a8a3a',D:'#1a1a1a',W:'#fff',P:'#e88aa0'}, rows:[
+  '................',
+  '...D........D...',
+  '...g........g...',
+  '...g.gggggg.g...',
+  '...ggGGGGGGgg...',
+  '..gGGGGGGGGGGg..',
+  '.gGGGGDGGDGGGGg.',
+  'gGGGGGGGGGGGGGGg',
+  'gGGGGGPPPPGGGGGg',
+  'gGGGGGGGGGGGGGGg',
+  'gGGGGGGGGGGGGGGg',
+  '.gGGGGGGGGGGGGg.',
+  '..ggGGGGGGGGgg..',
+  '...gggggggggg...',
+  '....gg....gg....',
+  '................']},
+ chari:{ pal:{K:'#1a1a1a',S:'#b8bcc4',R:'#c83030',H:'#6a6a72'}, rows:[
+  '................',
+  '..............S.',
+  '.....RR......SS.',
+  '....R..R....S...',
+  '....R...RRRRR...',
+  '...KKK..R...R...',
+  '..K...K.R...K...',
+  '.K.....KRKKKKKK.',
+  '.K..H..KK.H...K.',
+  '.K.....KK.....K.',
+  '..K...K..K...K..',
+  '...KKK....KKK...',
+  '................',
+  '................',
+  '................',
+  '................']},
+ crow:{ pal:{K:'#15151c',P:'#3a2a5a',Y:'#e8b030',E:'#ff4040'}, rows:[
+  '................',
+  '.....KK.........',
+  '....KKKK....KK..',
+  '...KKKKKK..KKK..',
+  '..KKKKKKKKKKKK..',
+  '..KKEKKKKKKEKK..',
+  '..KKKKKKKKKKKK..',
+  '...KKKKYYKKKKK..',
+  '..PKKKKKKKKKKKP.',
+  '.PKKKKKKKKKKKKP.',
+  'PKKKKKKKKKKKKKKP',
+  '.PKKKKKKKKKKKKP.',
+  '..KKKKKKKKKKKK..',
+  '...KKKK..KKKK...',
+  '....KK....KK....',
+  '................']},
+ kinoko:{ pal:{R:'#d83838',W:'#f4ecd8',S:'#e8e0c8',K:'#2a2a2a',P:'#e89090'}, rows:[
+  '................',
+  '....RRRRRRRR....',
+  '..RRRRRRRRRRRR..',
+  '.RRRWRRRRWRRRRR.',
+  '.RRRRRRRRRRRRRR.',
+  'RRWRRRRRRRRWRRRR',
+  'RRRRRRRRRRRRRRRR',
+  '.RRRRRRRRRRRRRR.',
+  '..SSSSSSSSSSSS..',
+  '...SKSSSSSSKS...',
+  '...SSSSSSSSSS...',
+  '...SSSPPPPSSSS..',
+  '....SSSSSSSS....',
+  '....SSSSSSSS....',
+  '....SSSSSSSS....',
+  '................']},
+ risu:{ pal:{B:'#a86a30',b:'#7a4a20',S:'#e8c8a0',K:'#2a2a2a',W:'#fff'}, rows:[
+  '................',
+  '..BB......BB....',
+  '.BBBB....BBBB...',
+  '.BBBBBBBBBBBB...',
+  '.BKBBBBBBBBKB...',
+  '.BBBBBBBBBBBB...',
+  '.BBBWWWWWWBBB...',
+  '..SSBBBBBBSS.BB.',
+  '..BBBBBBBBBBBBBB',
+  '..BBBBBBBBB.BBBB',
+  '..BBBBBBBBB.BBB.',
+  '..BBBBBBBBBBBB..',
+  '..bBB..BBb......',
+  '..bb....bb......',
+  '................',
+  '................']},
+ boar:{ pal:{B:'#7a5230',b:'#4e3418',K:'#2a2a2a',W:'#f0ead8',P:'#e0a0a0'}, rows:[
+  '................',
+  '..b..........b..',
+  '..bb........bb..',
+  '.bBBBBBBBBBBBBb.',
+  'bBBBBBBBBBBBBBBb',
+  'bBBKBBBBBBBBKBBb',
+  'bBBBBBBBBBBBBBBb',
+  'bBBBBBBBBBBBBBBb',
+  '.BBBBBBBBBBBBBB.',
+  '.WBBBPPPPPPBBWB.',
+  '.WBBPbPPPPbPBBW.',
+  '..BBBBBBBBBBBB..',
+  '..BB..BBBB..BB..',
+  '..bb..bbbb..bb..',
+  '................',
+  '................']},
+ sarari:{ pal:{K:'#1a1c2a',S:'#e8c8a0',N:'#283050',R:'#c03030',W:'#fff',G:'#888'}, rows:[
+  '................',
+  '.....KKKKKK.....',
+  '....KKKKKKKK....',
+  '...KKKKKKKKKK...',
+  '...SSSSSSSSSS...',
+  '...SGSSSSSSGS...',
+  '...SSSSSSSSSS...',
+  '....SSSSSSSS....',
+  '...WNNNNNNNNW...',
+  '..NNNWRRRRWNNN..',
+  '..NNNNRRRRNNNN..',
+  '..NNNNRRRRNNNN..',
+  '..NNNN.NN.NNNN..',
+  '...NN..NN..NN...',
+  '...KK..KK..KK...',
+  '................']},
+ kobun:{ pal:{K:'#1a1a1a',S:'#e8c8a0',C:'#3a6a9a',P:'#5a3a2a',W:'#fff',E:'#2a2a2a'}, rows:[
+  '................',
+  '....CCCCCCCC....',
+  '...CCCCCCCCCC...',
+  '..CCCCCCCCCCCC..',
+  '...PPPPPPPPPP...',
+  '...SSSSSSSSSS...',
+  '...SEESSSSEES...',
+  '...SSSSSSSSSS...',
+  '....SSSSSSSS....',
+  '...KKKKKKKKKK...',
+  '..KKKKKKKKKKKK..',
+  '..KKKWWWWWWKKK..',
+  '..KKKKKKKKKKKK..',
+  '...KK......KK...',
+  '...KK......KK...',
+  '................']},
+ ginji:{ pal:{K:'#0e0e12',S:'#d8b088',D:'#1a1a1a',W:'#fff',J:'#2a2a35'}, rows:[
+  '................',
+  '...KKKKKKKKKK...',
+  '..KKKKKKKKKKKK..',
+  '.KKKKKKKKKKKKKK.',
+  '.KKKKKKKKKKKKKK.',
+  '..SSSSSSSSSSSS..',
+  '..DDDDDDDDDDDD..',
+  '..DWDDDDDDDDWD..',
+  '...SSSSSSSSSS...',
+  '....SSSSSSSS....',
+  '...JJJJJJJJJJ...',
+  '..JJJWJJJJWJJJ..',
+  '..JJJJJJJJJJJJ..',
+  '..JJJJ....JJJJ..',
+  '...KK......KK...',
+  '................']},
+ kani:{ pal:{R:'#d83828',r:'#a02818',K:'#1a1a1a',W:'#fff'}, rows:[
+  '................',
+  '.RR..........RR.',
+  'RrrR........RrrR',
+  'RrrR..K..K..RrrR',
+  '.RRR.RRRRRR.RRR.',
+  '..RRRRrrrrRRRR..',
+  '.RRRRrrrrrrRRRR.',
+  'RRRRrKrrrrKrRRRR',
+  'RRRRrrrrrrrrRRRR',
+  '.RRRrrrrrrrrRRR.',
+  '..RRrrrrrrrrRR..',
+  '..R.RRRRRRRR.R..',
+  '.R..R.R..R.R..R.',
+  'R...R.R..R.R...R',
+  '................',
+  '................']},
+ kamome:{ pal:{W:'#f0f2f6',G:'#9098a4',Y:'#e8b030',K:'#2a2a2a'}, rows:[
+  '................',
+  '......WWWW......',
+  '.....WWWWWW.....',
+  '....WWWWWWWW....',
+  '....WKWWWWKW....',
+  '....WWWWWWWW....',
+  '.....WYYYYW.....',
+  'GG..WWWWWWWW..GG',
+  'GGGGWWWWWWWWGGGG',
+  '.GGGWWWWWWWWGGG.',
+  '..GGWWWWWWWWGG..',
+  '...WWWWWWWWWW...',
+  '....WWWWWWWW....',
+  '.....WW..WW.....',
+  '.....YY..YY.....',
+  '................']},
+ ika:{ pal:{P:'#9a5ac8',p:'#6a3a98',K:'#1a1a1a',W:'#fff',Y:'#f0d040'}, rows:[
+  '................',
+  '....PPPPPPPP....',
+  '..PPPPPPPPPPPP..',
+  '.PPPPPPPPPPPPPP.',
+  '.PPPPPPPPPPPPPP.',
+  '.PPWKPPPPPPKWPP.',
+  '.PPWKPPPPPPKWPP.',
+  '.PPPPPPPPPPPPPP.',
+  '.PPPPPYYYYPPPPP.',
+  '..PPPPPPPPPPPP..',
+  '..pPpPpPpPpPpP..',
+  '..p.p.p.p.p.pP..',
+  '..p.p.p.p.p.p...',
+  '..p...p.p...p...',
+  '..p...p.p...p...',
+  '................']},
+ bat:{ pal:{P:'#7464a0',B:'#52427a',K:'#241a38',W:'#fff',E:'#ffe24a'}, rows:[
+  '................',
+  '.PP..........PP.',
+  'PPPP...BB...PPPP',
+  'PPPPP.BBBB.PPPPP',
+  'PPPPPBBBBBBPPPPP',
+  '.PPPBBEBBEBBPPP.',
+  '..PPBBBBBBBBPP..',
+  '...BBBWBBWBBB...',
+  '...BBBBBBBBBB...',
+  '....BBBBBBBB....',
+  '.....BB..BB.....',
+  '................',
+  '................',
+  '................',
+  '................',
+  '................']},
+ golem:{ pal:{G:'#8a8a92',g:'#5a5a64',D:'#3a3a42',E:'#f0e060',K:'#1a1a1a'}, rows:[
+  '................',
+  '...gGGGGGGgg....',
+  '..gGGGGGGGGGg...',
+  '.gGGGGGGGGGGGg..',
+  '.gGGEGGGGGEGGg..',
+  '.gGGGGGGGGGGGg..',
+  '.gGGGgggggGGGg..',
+  '.gGGGGGGGGGGGg..',
+  'gGGGGGGGGGGGGGg.',
+  'gGGGgGGGGgGGGGg.',
+  'gGGGGGGGGGGGGGg.',
+  '.gGGGGGGGGGGGg..',
+  '..gGGg..gGGg....',
+  '..ggg....ggg....',
+  '..DDD....DDD....',
+  '................']},
+ dragon:{ pal:{G:'#3a9a5a',g:'#287040',W:'#f0ead8',E:'#e0c040',K:'#1a1a1a',R:'#d04040'}, rows:[
+  '................',
+  '.g..........g...',
+  '.gg..GGGG..gg...',
+  '.gGgGGGGGGgGg...',
+  '..GGGGGGGGGGG...',
+  '..GGEGGGGEGGG...',
+  '..GGGGGGGGGGG...',
+  '..GWGGGGGGWGG...',
+  '..GGGGRRGGGGG...',
+  '.gGGGGGGGGGGGg..',
+  'gGGGGGGGGGGGGGg.',
+  '.gGGGGGGGGGGGg..',
+  '..gGGg..gGGg.gg.',
+  '..ggg....ggg.gg.',
+  '..KK......KK....',
+  '................']},
+ kakera:{ pal:{P:'#a040d0',p:'#6020a0',W:'#f0c0ff',K:'#1a0a2a'}, rows:[
+  '................',
+  '.......P........',
+  '......PPP.......',
+  '...P.PpppP.P....',
+  '..PPPpKKpPPP....',
+  '...PpKWWKpP.....',
+  '..P.pKWWKp.P....',
+  '.PPPpKKKKpPPP...',
+  '...PpppppP.P....',
+  '..P..PPPP..P....',
+  '.....P..P.......',
+  '....P....P......',
+  '...P......P.....',
+  '................',
+  '................',
+  '................']},
+ noise:{ pal:{K:'#0c0810',P:'#3a1a5a',p:'#5a2a7a',E:'#ff3030',W:'#ff8080'}, rows:[
+  '......KKKK......',
+  '...KKPPPPPPKK...',
+  '..KPPppppppPPK..',
+  '.KPpppPPPPpppPK.',
+  '.KPppPpKKpPppPK.',
+  'KPppPpEWWEpPppPK',
+  'KPpPpKWWWWKpPpPK',
+  'KPpPpKWWWWKpPpPK',
+  'KPppPpEWWEpPppPK',
+  '.KPppPpKKpPppPK.',
+  '.KPpppPPPPpppPK.',
+  '..KPPppppppPPK..',
+  '...KKPPPPPPKK...',
+  '.....KKKKKK.....',
+  '................',
+  '................']},
+};
+const FSPR = {};
+function buildFoe(key){
+  const d = FOEPIX[key]; if(!d) return null;
+  const cv = document.createElement('canvas'); cv.width = 64; cv.height = 64;
+  const c = cv.getContext('2d');
+  for(let y=0;y<16;y++){ const row = d.rows[y]; for(let x=0;x<16;x++){
+    const col = d.pal[row[x]];
+    if(col){ c.fillStyle = col; c.fillRect(x*4, y*4, 4, 4); }
+  }}
+  return cv;
+}
+function foeIcon(key){
+  if(!FOEPIX[key]) return '';
+  const cv = FSPR[key] || (FSPR[key] = buildFoe(key));
+  return cv ? `<img class="ficon" src="${cv.toDataURL()}" alt="">` : '';
+}
+
+/* ---------------- タイルのドット絵 ---------------- */
+const TILEPIX = {
+ T:{ pal:{G:'#2e7a28',g:'#449e36',L:'#66c050',K:'#7a4a20',k:'#553312'},
+  rows:[
+   '....GGGGGGGG....',
+   '..GGgggggggGG...',
+   '.GGggLggggggGG..',
+   '.GggLLLgggLggG..',
+   'GGggLLggggLLgGG.',
+   'GggggggLgggggG..',
+   'GGgggLLLggggGG..',
+   '.GGgggLgggGGG...',
+   '..GGGgggGGGG....',
+   '....GGGGGG......',
+   '......KKk.......',
+   '......KKk.......',
+   '......KKk.......',
+   '.....KKKkk......',
+   '................',
+   '................']},
+ t:{ pal:{G:'#3a8a3a',g:'#58ac4a',L:'#7ed068',K:'#7a4a20'},
+  rows:[
+   '................',
+   '................',
+   '.....GGGGGG.....',
+   '...GGggggggGG...',
+   '..GGgLLggggggG..',
+   '..GggLgggLLggG..',
+   '..GgggggLLgggG..',
+   '..GGggggggggGG..',
+   '...GGggggggGG...',
+   '.....GGGGGG.....',
+   '.......KK.......',
+   '.......KK.......',
+   '......KKKK......',
+   '................',
+   '................',
+   '................']},
+ F:{ pal:{g:'#4ea83e',W:'#fff',Y:'#f0d040',P:'#f088b0',O:'#f4a030'},
+  rows:[
+   '................',
+   '................',
+   '...W......P.....',
+   '..WYW....PWP....',
+   '...W..g...P.....',
+   '...g..g...g.....',
+   '................',
+   '.......Y........',
+   '..P...YOY...W...',
+   '.PWP...Y...WYW..',
+   '..P....g....W...',
+   '..g....g....g...',
+   '................',
+   '....W.....P.....',
+   '...WYW...PWP....',
+   '....g.....g.....']},
+ M:{ pal:{S:'#9a92a0',s:'#6e6878',w:'#f0f0f4',k:'#4e4858'},
+  rows:[
+   '................',
+   '.......ww.......',
+   '......wwww......',
+   '......wSww......',
+   '.....wSSSsw.....',
+   '.....SSSsss.....',
+   '....SSSSssss....',
+   '....SSSsSsss....',
+   '...SSSSSSssss...',
+   '...SSSsSSSsss...',
+   '..SSSSSSsSssss..',
+   '..SSSsSSSSssss..',
+   '.SSSSSSsSSsssss.',
+   '.SSsSSSSSSSssss.',
+   'SSSSSSsSSSssssss',
+   'kkkkkkkkkkkkkkkk']},
+ D:{ pal:{D:'#8a5a28',d:'#5e3a16',Y:'#f0c040',k:'#2a2a2a'},
+  rows:[
+   '................',
+   '................',
+   '....dddddddd....',
+   '...dDDDDDDDDd...',
+   '...dDDDDDDDDd...',
+   '...dDDdDDdDDd...',
+   '...dDDDDDDDDd...',
+   '...dDDDDDDDDd...',
+   '...dDDDDDDDDd...',
+   '...dDDDDDDYDd...',
+   '...dDDDDDDYDd...',
+   '...dDDDDDDDDd...',
+   '...dDDdDDdDDd...',
+   '...dDDDDDDDDd...',
+   '...dDDDDDDDDd...',
+   '...kkkkkkkkkk...']},
+};
+TILEPIX.E = TILEPIX.D;
+const TILEC2 = {};
+function tileImg(t){
+  const d = TILEPIX[t]; if(!d) return null;
+  if(TILEC2[t]) return TILEC2[t];
+  const cv = document.createElement('canvas'); cv.width=32; cv.height=32;
+  const c = cv.getContext('2d');
+  for(let y=0;y<16;y++)for(let x=0;x<16;x++){
+    const col = d.pal[d.rows[y][x]];
+    if(col){ c.fillStyle=col; c.fillRect(x*2,y*2,2,2); }
+  }
+  return TILEC2[t]=cv;
+}
+
+/* ---------------- NPCのドット絵（人間ジェネレータ＋オブジェクト） ---------------- */
+function humanPix(o){
+  const g = Array.from({length:16},()=>Array(16).fill('.'));
+  const set=(x1,y1,x2,y2,ch)=>{for(let y=y1;y<=y2;y++)for(let x=x1;x<=x2;x++)g[y][x]=ch;};
+  // かみ
+  set(3,1,12,3,'H');
+  set(3,4,3,6,'H'); set(12,4,12,6,'H');
+  if(o.long){ set(2,2,3,9,'H'); set(12,2,13,9,'H'); }
+  if(o.bald){ set(3,1,12,2,'.'); set(4,2,11,3,'S'); set(3,3,3,3,'H'); set(12,3,12,3,'H'); }
+  if(o.spiky){ g[0][4]='H'; g[0][7]='H'; g[0][10]='H'; g[0][12]='H'; }
+  // かお
+  set(4,4,11,7,'S');
+  if(o.shades){ set(4,5,11,5,'K'); g[6][4]='K'; g[6][11]='K'; }
+  else { g[5][5]='K'; g[5][10]='K'; }
+  // ぼうし(かみの上から)
+  if(o.hat){ set(3,0,12,1,'A'); set(2,2,13,2,'A'); }
+  // からだ
+  if(o.dress){
+    set(4,8,11,11,'P');
+    set(3,9,3,10,'S'); set(12,9,12,10,'S');
+    set(3,12,12,12,'P'); set(2,13,13,13,'P');
+    set(5,14,6,14,'S'); set(9,14,10,14,'S');
+    set(5,15,6,15,'Q'); set(9,15,10,15,'Q');
+  } else {
+    set(4,8,11,10,'P');
+    set(3,9,3,10,'S'); set(12,9,12,10,'S');
+    set(4,11,11,12,'Z');
+    set(4,13,6,13,'Z'); set(9,13,11,13,'Z');
+    set(5,14,6,14,'S'); set(9,14,10,14,'S');
+    set(4,15,6,15,'Q'); set(9,15,11,15,'Q');
+  }
+  if(o.apron) set(6,9,9,12,'W');
+  return { pal:{H:o.hair||'#3a2a14',S:o.skin||'#f8c89c',K:'#1a1a1a',P:o.top||'#c05050',
+                Z:o.bottom||'#3a5aa8',Q:o.shoes||'#5a3a20',W:'#f4f4f4',A:o.hatC||'#d83434'},
+           rows:g.map(r=>r.join('')) };
+}
+const OBJPIX = {
+ sign:{ pal:{D:'#a87838',d:'#6e4a1c',k:'#3a2a14'}, rows:[
+   '................','..dddddddddddd..','..dDDDDDDDDDDd..','..dDkkkDDkkkDd..',
+   '..dDDDDDDDDDDd..','..dDkkkkkkkkDd..','..dDDDDDDDDDDd..','..dddddddddddd..',
+   '.......dd.......','.......dd.......','.......dd.......','.......dd.......',
+   '.......dd.......','......dddd......','................','................']},
+ phone:{ pal:{R:'#d83434',r:'#a02020',C:'#a8e0f0',k:'#2a2a2a',W:'#f4f4f4'}, rows:[
+   '....rrrrrrrr....','...rRRRRRRRRr...','...rRCCCCCCRr...','...rRCCCCCCRr...',
+   '...rRCCCCCCRr...','...rRRRRRRRRr...','...rRRWWWWRRr...','...rRRRRRRRRr...',
+   '...rRRRRRRRRr...','...rRRRRRRRRr...','...rRRRRRRRRr...','...rRRRRRRRRr...',
+   '...rRRRRRRRRr...','...rRRRRRRRRr...','...rrrrrrrrrr...','...kkkkkkkkkk...']},
+ bed:{ pal:{R:'#c85050',r:'#903838',W:'#f4f4f4',D:'#7a4a20'}, rows:[
+   '................','................','...WWWWWW.......','..WWWWWWWW......',
+   '..WWWWWWWWRRRR..','.RRRRRRRRRRRRRR.','.RRRRRRRRRRRRRR.','.RrrRRRRRRrrRR..',
+   '.RRRRRRRRRRRRRR.','.RRRRRRRRRRRRRR.','.rrrrrrrrrrrrrr.','.DD..........DD.',
+   '.DD..........DD.','................','................','................']},
+ tv:{ pal:{k:'#2a2a2a',K:'#444',C:'#70d8e8',c:'#3898b0',D:'#7a4a20'}, rows:[
+   '................','....k......k....','.....k....k.....','......k..k......',
+   '..kkkkkkkkkkkk..','..kKKKKKKKKKKk..','..kKCCCCCCCCKk..','..kKCCCCCcCCKk..',
+   '..kKCCCcCCCCKk..','..kKCCCCCCcCKk..','..kKCCCCCCCCKk..','..kKKKKKKKKKKk..',
+   '..kkkkkkkkkkkk..','....DD....DD....','................','................']},
+ meteor:{ pal:{S:'#7a6a8a',s:'#544868',O:'#f4a030',Y:'#f8d048'}, rows:[
+   '................','......SSSS......','....SSSSSSSS....','...SSSsSSSSSs...',
+   '..SSSSSSOSSSSS..','..SsSSSOYOSSSs..','.SSSSSSSOSSSSSS.','.SSsSSSSSSSsSSS.',
+   '.SSSSSOSSSSSSSS.','.SsSSSOYOSSSsSS.','.SSSSSSOSSSSSSS.','..SSsSSSSSSsSS..',
+   '..SSSSSSsSSSSS..','...SSSSSSSSSS...','.....SSSSSS.....','................']},
+ stump:{ pal:{D:'#a87838',d:'#6e4a1c',L:'#c89858'}, rows:[
+   '................','................','................','................',
+   '....dddddddd....','..ddDDDDDDDDdd..','.dDDLLLLLLLLDDd.','.dDLLddddddLLDd.',
+   '.dDLddLLLLddLDd.','.dDLdLLddLLdLDd.','.dDLddLLLLddLDd.','.dDDLLddddLLDDd.',
+   '.ddDDLLLLLLDDdd.','..dddDDDDDDddd..','...dddddddddd...','................']},
+ speaker:{ pal:{k:'#2a2a2a',K:'#48484e',s:'#888',w:'#ccc'}, rows:[
+   '...kkkkkkkkkk...','..kKKKKKKKKKKk..','..kKssssssssKk..','..kKswwwwwwsKk..',
+   '..kKswkkkkwsKk..','..kKswkkkkwsKk..','..kKswwwwwwsKk..','..kKssssssssKk..',
+   '..kKKKKKKKKKKk..','..kKssssssssKk..','..kKswwwwwwsKk..','..kKswkkkkwsKk..',
+   '..kKswwwwwwsKk..','..kKssssssssKk..','..kKKKKKKKKKKk..','...kkkkkkkkkk...']},
+ fountain:{ pal:{S:'#b8b8c4',s:'#8a8a98',B:'#4a9ce8',b:'#3578c0',W:'#e8f8ff'}, rows:[
+   '.......WW.......','......WWWW......','....W.WWWW.W....','...WW..WW..WW...',
+   '...W...WW...W...','.......ss.......','.......ss.......','....ssssssss....',
+   '..ssSSSSSSSSss..','.sSBBBBBBBBBBSs.','.sSBbBBWWBBbBSs.','.sSBBBbBBbBBBSs.',
+   '.sSSBBBBBBBBSSs.','..ssSSSSSSSSss..','...ssssssssss...','................']},
+ shell:{ pal:{P:'#f0a8c0',p:'#c87898',W:'#fff0f4'}, rows:[
+   '................','................','................','.......pp.......',
+   '.....ppPPpp.....','....pPPPPPPp....','...pPPpPPpPPp...','...pPPpPPpPPp...',
+   '..pPPpPPPPpPPp..','..pPPpPPPPpPPp..','..pPpPPWWPPpPp..','.pPPpPPWWPPpPPp.',
+   '.pPPpPPPPPPpPPp.','.ppPPPPPPPPPPpp.','..pppppppppppp..','................']},
+ crystal_s:{ pal:{C:'#70e0e8',c:'#38a8c0',W:'#eaffff'}, rows:[
+   '................','................','................','................',
+   '.......CC.......','......CWCc......','.....CCWCcc.....','.....CWCCcc.....',
+   '....CCWCCccc....','....CCCCCccc....','.....CCCccc.....','......CCcc......',
+   '.......Cc.......','................','................','................']},
+ crystal_b:{ pal:{C:'#b890f0',c:'#7858c0',W:'#f4eaff'}, rows:[
+   '................','.......CC.......','......CWCc......','......CWCc......',
+   '.....CCWCcc.....','.....CWCCcc.....','....CCWCCccc....','....CCWCCccc....',
+   '...CCCWCCcccc...','...CCCCCCcccc...','...CCCCCccccc...','....CCCCcccc....',
+   '.....CCCccc.....','......CCcc......','.......Cc.......','................']},
+ star:{ pal:{Y:'#f8d048',y:'#e0a820',W:'#fffbe0'}, rows:[
+   '................','.......YY.......','.......YY.......','......YWWY......',
+   '......YWWY......','..YYYYYWWYYYYY..','...YYYWWWWYYY...','....YYWWWWYY....',
+   '.....YWWWWY.....','.....YWWWWY.....','....YYWWWWYY....','....YYY..YYY....',
+   '...YYY....YYY...','...YY......YY...','................','................']},
+ altar:{ pal:{S:'#b0a8c0',s:'#787090',Y:'#f8d048',W:'#fffbe0',k:'#4a4460'}, rows:[
+   '.......YY.......','......YWWY......','......YWWY......','.......YY.......',
+   '................','......ssss......','.....sSSSSs.....','.....sSSSSs.....',
+   '.....sSSSSs.....','....ssSSSSss....','...sSSSSSSSSs...','...sSSSSSSSSs...',
+   '..ssSSSSSSSSss..','.sSSSSSSSSSSSSs.','.kkkkkkkkkkkkkk.','................']},
+ boar:{ pal:{B:'#8a5a30',b:'#5e3a1c',K:'#2a2a2a',W:'#f4f4f4',P:'#e8a8a0'}, rows:[
+   '................','................','..bb............','..bbb...bbbbb...',
+   '.bbbbbbbbbbbbb..','.bKbbBBBBBBBbb..','.bbbBBBBBBBBBb..','bbBBBBBBBBBBBb..',
+   'WbBPBBBBBBBBBb..','WbBBBBBBBBBBBb..','.bbBBBBBBBBBb...','..bBB..BB..Bb...',
+   '..bBB..BB..BB...','..bbb..bb..bb...','................','................']},
+ risu:{ pal:{B:'#b8743c',b:'#8a5224',W:'#f4e8d8',K:'#2a2a2a'}, rows:[
+   '................','................','................','.........bb.....',
+   '........bBBb....','.......bBBBBb...','..bb...bBBBBb...','.bBBb..bBBBb....',
+   '.bBKBbbbBBBb....','.bBBBBBBBBb.....','..bBWWBBBb......','..bBWWBBBBb.....',
+   '...bBBBBBBb.....','...bBB.BBb......','...bb..bb.......','................']},
+};
+function npcSpec(n){
+  switch(n.name){
+    case 'ママ':        return humanPix({hair:'#7a4a22', long:true, dress:true, top:'#e87888', apron:true});
+    case 'とき':        return {pal:PIX.tokia.pal, rows:PIX.tokia.down};
+    case '琥太郎':      return {pal:PIX.kota.pal, rows:PIX.kota.down};
+    case 'おじいさん':  return humanPix({hair:'#d8d8d8', bald:true, top:'#7a8a5a'});
+    case 'おばあさん':  return humanPix({hair:'#d8d8d8', long:true, dress:true, top:'#9a7ab8'});
+    case 'おとこのこ':  return humanPix({hair:'#3a2a14', top:'#e8a030', bottom:'#4a7a3a'});
+    case 'おばさん':    return humanPix({hair:'#5a3a1a', long:true, dress:true, top:'#5a9ad0'});
+    case 'みせのひと':  return humanPix({hair:'#3a2a14', top:'#f4f4f4', apron:true, hat:true, hatC:'#f4f4f4'});
+    case 'ギンジ':      return humanPix({hair:'#222', shades:true, top:'#34343c', bottom:'#222'});
+    case 'こぶん':      return humanPix({hair:'#3a2a14', hat:true, hatC:'#2858c8', top:'#b8b8b8'});
+    case 'バンドマン':  return humanPix({hair:'#9040c0', spiky:true, top:'#1a1a1a', bottom:'#1a1a1a'});
+    case 'つりびと':    return humanPix({hair:'#444', hat:true, hatC:'#4a7a3a', top:'#3a6aa0'});
+    case 'かんばん':    return OBJPIX.sign;
+    case 'でんわボックス': return OBJPIX.phone;
+    case 'ベッド':      return OBJPIX.bed;
+    case 'テレビ':      return OBJPIX.tv;
+    case 'いんせき':    return OBJPIX.meteor;
+    case 'おおきな きりかぶ': return OBJPIX.stump;
+    case 'スピーカー':  return OBJPIX.speaker;
+    case 'ふんすい':    return OBJPIX.fountain;
+    case 'おおきなカイガラ': return OBJPIX.shell;
+    case 'ちいさなクリスタル': return OBJPIX.crystal_s;
+    case 'おおきなクリスタル': return OBJPIX.crystal_b;
+    case 'ほしのこえ':  return OBJPIX.star;
+    case 'メロディのさいだん': return OBJPIX.altar;
+    case 'キバまる':    return OBJPIX.boar;
+    case 'リス':        return OBJPIX.risu;
+    default: return null;
+  }
+}
+const NPCIMG = {};
+function npcImg(n){
+  if(NPCIMG[n.name]!==undefined) return NPCIMG[n.name];
+  const d = npcSpec(n);
+  if(!d) return NPCIMG[n.name]=null;
+  const cv = document.createElement('canvas'); cv.width=32; cv.height=32;
+  const c = cv.getContext('2d');
+  for(let y=0;y<16;y++)for(let x=0;x<16;x++){
+    const col = d.pal[d.rows[y][x]];
+    if(col){ c.fillStyle=col; c.fillRect(x*2,y*2,2,2); }
+  }
+  return NPCIMG[n.name]=cv;
+}
+function tileAt(m, x, y){
+  if(y<0||y>=m.grid.length||x<0||x>=m.grid[0].length) return '#';
+  return m.grid[y][x];
+}
+function npcAt(x, y){
+  return NPCS.find(n=>n.map===S.map && n.x===x && n.y===y && !(n.hide && n.hide(F())));
+}
+function walkable(m, x, y){
+  const t = tileAt(m, x, y);
+  if(t==='#'||SOLID.has(t)) return false;
+  if(npcAt(x,y)) return false;
+  return true;
+}
+let moveAnim = null; // {fx,fy,tx,ty,t0}
+function draw(){
+  frame++;
+  const m = MAPS[S.map];
+  const W = m.grid[0].length, H = m.grid.length;
+  // カメラ
+  let px = S.x, py = S.y;
+  if(moveAnim){
+    const k = Math.min(1,(performance.now()-moveAnim.t0)/150);
+    px = moveAnim.fx + (moveAnim.tx-moveAnim.fx)*k;
+    py = moveAnim.fy + (moveAnim.ty-moveAnim.fy)*k;
+  }
+  let cx = px - VW/2 + .5, cy = py - VH/2 + .5;
+  cx = Math.max(0, Math.min(W-VW, cx)); cy = Math.max(0, Math.min(H-VH, cy));
+  if(W<=VW) cx = (W-VW)/2; if(H<=VH) cy = (H-VH)/2;
+  ctx.fillStyle = '#000'; ctx.fillRect(0,0,320,288);
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  const x0 = Math.floor(cx), y0 = Math.floor(cy);
+  for(let ty=y0; ty<=y0+VH; ty++){
+    for(let tx=x0; tx<=x0+VW; tx++){
+      const t = tileAt(m,tx,ty); if(t==='#') continue;
+      const sx = (tx-cx)*TS, sy = (ty-cy)*TS;
+      let col = TILE_C[t]||'#000';
+      if(t==='~') col = (Math.floor(frame/30)+tx+ty)%2 ? '#4a9ce8' : '#3e8cd8';
+      if(t==='n') col = `hsl(${270+20*Math.sin(frame/40+tx+ty)},45%,${18+4*Math.sin(frame/25+tx*2)}%)`;
+      ctx.fillStyle = col; ctx.fillRect(sx,sy,TS+1,TS+1);
+      if(t==='.'&&(tx*7+ty*13)%9===0){ ctx.fillStyle='rgba(0,0,0,.07)'; ctx.fillRect(sx+10,sy+10,4,4); }
+      if(t==='b'&&(tx*5+ty*11)%7===0){ ctx.fillStyle='rgba(0,0,0,.08)'; ctx.fillRect(sx+14,sy+16,3,3); }
+      if(t==='C'&&(tx+ty)%5===0){ ctx.fillStyle='rgba(255,255,255,.05)'; ctx.fillRect(sx+8,sy+8,3,3); }
+      if(t==='R'){ ctx.fillStyle='rgba(0,0,0,.15)'; ctx.fillRect(sx,sy+TS-6,TS+1,6); }
+      // かべ・やね・みず・どうくつ の質感
+      if(t==='W'){ ctx.fillStyle='rgba(0,0,0,.12)';
+        for(let yy=8;yy<TS;yy+=12) ctx.fillRect(sx,sy+yy,TS,2);
+        ctx.fillRect(sx+(ty%2?8:20), sy, 2, TS); }
+      if(t==='R'){ ctx.fillStyle='rgba(0,0,0,.18)';
+        for(let yy=6;yy<TS;yy+=8) ctx.fillRect(sx,sy+yy,TS,2); }
+      if(t==='~'){ ctx.fillStyle='rgba(255,255,255,.25)';
+        const wv = Math.floor(frame/20+tx+ty)%4;
+        if(wv===0) ctx.fillRect(sx+6,sy+10,12,2);
+        if(wv===2) ctx.fillRect(sx+14,sy+22,10,2); }
+      if(t==='c'){ ctx.fillStyle='rgba(0,0,0,.25)';
+        if((tx*3+ty*7)%4===0) ctx.fillRect(sx+4,sy+4,10,8);
+        if((tx*5+ty*3)%4===1) ctx.fillRect(sx+18,sy+18,10,8); }
+      const ti = tileImg(t);
+      if(ti){ ctx.imageSmoothingEnabled=false; ctx.drawImage(ti, sx, sy); }
+    }
+  }
+  // NPC
+  ctx.font = '26px serif';
+  ctx.imageSmoothingEnabled = false;
+  for(const n of NPCS){
+    if(n.map!==S.map || (n.hide&&n.hide(F()))) continue;
+    const sx=(n.x-cx)*TS, sy=(n.y-cy)*TS;
+    if(sx<-TS||sy<-TS||sx>320||sy>288) continue;
+    const im = npcImg(n);
+    if(im){
+      const fl = (n.name==='ほしのこえ') ? Math.sin(frame/18)*3 : 0;
+      ctx.drawImage(im, Math.round(sx), Math.round(sy)-4+fl);
+    } else ctx.fillText(n.e, sx+TS/2, sy+TS/2+2);
+  }
+  // 徘徊する敵シンボル（ドット絵）
+  ctx.imageSmoothingEnabled = false;
+  for(const r of roamers){
+    const sx=(r.x-cx)*TS, sy=(r.y-cy)*TS;
+    if(sx<-TS||sy<-TS||sx>320||sy>288) continue;
+    const bob = Math.sin(frame/9 + r.x*1.3 + r.y)*2;
+    const weak = isWeakRoamer(r);
+    // 影
+    ctx.globalAlpha = weak ? 0.18 : 0.28;
+    ctx.fillStyle='#000'; ctx.beginPath();
+    ctx.ellipse(sx+TS/2, sy+TS-3, 9, 3, 0, 0, 7); ctx.fill();
+    ctx.globalAlpha = 1;
+    // ドット絵本体（弱い敵は うすく）
+    const sp = FOEPIX[r.ek] ? (FSPR[r.ek] || (FSPR[r.ek]=buildFoe(r.ek))) : null;
+    ctx.globalAlpha = weak ? 0.5 : 1;
+    if(sp){
+      ctx.drawImage(sp, Math.round(sx), Math.round(sy)-5+bob, TS, TS);
+    } else {
+      ctx.font='24px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(r.e, sx+TS/2, sy+TS/2+2+bob);
+    }
+    ctx.globalAlpha = 1;
+  }
+  ctx.font = '26px serif';
+  ctx.imageSmoothingEnabled = false;
+  const k = moveAnim ? Math.min(1,(performance.now()-moveAnim.t0)/150) : 1;
+  const step = moveAnim ? Math.floor(frame/8)%2===1 : false;
+  for(let i=S.party.length-1; i>=1; i--){
+    const to = S.trail[i-1], from = S.trail[i] || to;
+    if(!to) continue;
+    const fx = from.x + (to.x-from.x)*k, fy = from.y + (to.y-from.y)*k;
+    const sx=(fx-cx)*TS, sy=(fy-cy)*TS;
+    // 向き：いまの位置→目的地（とまってたら主人公のほうを見る）
+    const ahead = (i===1) ? {x:S.x,y:S.y} : S.trail[i-2];
+    let fdir = 'down';
+    if(ahead){
+      const dx = ahead.x-to.x, dy = ahead.y-to.y;
+      if(Math.abs(dx)>Math.abs(dy)) fdir = dx>0?'right':'left';
+      else if(dy!==0) fdir = dy>0?'down':'up';
+    }
+    const im = spr(S.party[i].id, fdir, step);
+    if(im) ctx.drawImage(im, Math.round(sx), Math.round(sy)-4);
+    else ctx.fillText(S.party[i].e, sx+TS/2, sy+TS/2+2);
+  }
+  // 主人公
+  {
+    const sx=(px-cx)*TS, sy=(py-cy)*TS;
+    const im = spr(S.party[0].id, S.dir, step);
+    if(im) ctx.drawImage(im, Math.round(sx), Math.round(sy)-4);
+    else { ctx.font='27px serif'; ctx.fillText(S.party[0].e, sx+TS/2, sy+TS/2+2); }
+  }
+  // HUD
+  $('hud').innerHTML = `♪×${mc()}　${S.money}えん<br><span style="color:#9ab">${m.name}</span>`;
+}
+
+/* ---------------- ワープ ---------------- */
+async function fadeWarp(map, x, y){
+  playBGM(mapTrack(map));
+  S.map = map; S.x = x; S.y = y;
+  S.trail = [{x,y},{x,y}];
+  moveAnim = null;
+  SE.move();
+  spawnRoamers();
+}
+
+/* ---------------- 移動と更新 ---------------- */
+const DIRV = {up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
+const OPP = {up:'down',down:'up',left:'right',right:'left'};
+
+/* === シンボルエンカウント（徘徊する敵シンボル） === */
+let roamers = [];          // {x,y,dir,group,e,ek}
+let lastRoamMap = null;    // マップが変わったら再配置
+let battleActive = false;  // バトル中はシンボル停止
+function dirFromTo(ax,ay,bx,by){
+  const dx=bx-ax, dy=by-ay;
+  if(Math.abs(dx)>=Math.abs(dy)) return dx>0?'right':(dx<0?'left':(dy>0?'down':'up'));
+  return dy>0?'down':'up';
+}
+function foeTier(group){ // グループの強さ目安
+  let mx = 0; group.forEach(k=>{ const f=FOES[k]; if(f && !f.boss) mx = Math.max(mx, f.exp); });
+  return Math.max(1, Math.round(mx/4)); // exp4→1, exp8→2, exp24→6…
+}
+function isWeakRoamer(r){
+  // 主人公レベルが グループの強さ＋4 以上 なら「よわい敵」＝逃げる/瞬殺
+  return S.party[0] && (S.party[0].lv >= foeTier(r.group)+4);
+}
+function roamerAt(x,y,except){ return roamers.find(r=>r!==except && r.x===x && r.y===y); }
+function spawnRoamers(){
+  roamers = [];
+  const m = MAPS[S.map], enc = m.enc;
+  if(!enc || (enc.off && enc.off(F())) || m.indoor) return;
+  const count = 3 + Math.floor(Math.random()*2); // 3〜4体
+  let tries = 0;
+  while(roamers.length < count && tries < 400){
+    tries++;
+    const x = 1 + Math.floor(Math.random()*(m.grid[0].length-2));
+    const y = 1 + Math.floor(Math.random()*(m.grid.length-2));
+    if(!walkable(m,x,y) || roamerAt(x,y)) continue;
+    if(Math.abs(x-S.x)+Math.abs(y-S.y) < 4) continue; // 主人公の近くには湧かない
+    const group = enc.groups[Math.floor(Math.random()*enc.groups.length)];
+    const lead = FOES[group[0]];
+    roamers.push({x, y, dir:'down', group, e:lead.e, ek:group[0]});
+  }
+}
+function moveRoamers(){
+  if(mode!=='field' || busy || battleActive || !S || moveAnim) return;
+  const m = MAPS[S.map];
+  for(const r of roamers){
+    const weak = isWeakRoamer(r);
+    const dist = Math.abs(r.x-S.x)+Math.abs(r.y-S.y);
+    let order;
+    if(weak){ // 主人公から にげる
+      const away = OPP[dirFromTo(r.x,r.y,S.x,S.y)];
+      order = [away, ...shuffle(['up','down','left','right'])];
+    } else if(dist<=5 && Math.random()<0.55){ // 近いと追ってくる
+      order = [dirFromTo(r.x,r.y,S.x,S.y), ...shuffle(['up','down','left','right'])];
+    } else {
+      order = shuffle(['up','down','left','right']);
+    }
+    for(const d of order){
+      const [dx,dy]=DIRV[d]; const nx=r.x+dx, ny=r.y+dy;
+      if(nx===S.x && ny===S.y){ // 主人公に接触（敵から突っ込んだ）
+        r.dir = d;
+        const enemyFirst = (d === S.dir); // 主人公の背後から来た＝不意打ち
+        triggerSymbol(r, weak, enemyFirst ? 'enemy' : null);
+        return;
+      }
+      if(walkable(m,nx,ny) && !roamerAt(nx,ny,r)){ r.x=nx; r.y=ny; r.dir=d; break; }
+    }
+  }
+}
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+async function triggerSymbol(r, weak, first){
+  const idx = roamers.indexOf(r); if(idx>=0) roamers.splice(idx,1);
+  if(weak){ // よわい敵は たたかわずに 逃げる/瞬殺
+    busy = true;
+    toast('よわい てきは あわてて にげていった！');
+    SE.ok(); await sleep(900); hideToast(); busy = false;
+    scheduleRespawn();
+    return;
+  }
+  await battle(r.group, {first, symbol:true});
+  scheduleRespawn();
+}
+function scheduleRespawn(){
+  const m = MAPS[S.map], enc = m.enc;
+  if(!enc || (enc.off && enc.off(F())) || m.indoor) return;
+  setTimeout(()=>{
+    if(mode!=='field' || m!==MAPS[S.map]) return;
+    if(roamers.length >= 4) return;
+    const W=m.grid[0].length, H=m.grid.length;
+    for(let t=0;t<60;t++){
+      // 画面外ぎみ＆主人公から離れた場所に1体だけ補充
+      const x=1+Math.floor(Math.random()*(W-2)), y=1+Math.floor(Math.random()*(H-2));
+      if(walkable(m,x,y) && !roamerAt(x,y) && Math.abs(x-S.x)+Math.abs(y-S.y)>6){
+        const group = enc.groups[Math.floor(Math.random()*enc.groups.length)];
+        roamers.push({x,y,dir:'down',group,e:FOES[group[0]].e,ek:group[0]});
+        break;
+      }
+    }
+  }, 5000 + Math.random()*4000);
+}
+/* トースト（フィールド用の小メッセージ） */
+function toast(msg){ const t=$('toast'); t.innerHTML=msg; t.style.display='block'; }
+function hideToast(){ $('toast').style.display='none'; }
+
+async function stepDone(){
+  S.steps++;
+  const m = MAPS[S.map];
+  // ドア
+  const d = m.doors.find(d=>d.x===S.x && d.y===S.y);
+  if(d){ await fadeWarp(d.to, d.tx, d.ty); return; }
+  // シンボル接触（主人公が敵シンボルに乗った）
+  const r = roamerAt(S.x, S.y);
+  if(r){
+    const weak = isWeakRoamer(r);
+    const playerFirst = (S.dir === r.dir); // 敵の背後を突いた＝先制
+    await triggerSymbol(r, weak, weak ? null : (playerFirst ? 'player' : null));
+  }
+}
+function tryMove(dir){
+  if(moveAnim || busy) return;
+  S.dir = dir;
+  const [dx,dy] = DIRV[dir];
+  const m = MAPS[S.map];
+  const nx = S.x+dx, ny = S.y+dy;
+  const W = m.grid[0].length, H = m.grid.length;
+  // 端から出る → 出口チェック
+  if(nx<0||ny<0||nx>=W||ny>=H){
+    const ex = m.exits.find(e=>
+      (e.side==='n'&&ny<0&&S.x>=e.min&&S.x<=e.max) ||
+      (e.side==='s'&&ny>=H&&S.x>=e.min&&S.x<=e.max) ||
+      (e.side==='w'&&nx<0&&S.y>=e.min&&S.y<=e.max) ||
+      (e.side==='e'&&nx>=W&&S.y>=e.min&&S.y<=e.max));
+    if(ex){
+      const tm = MAPS[ex.to];
+      let tx = ex.tx, ty = ex.ty;
+      if(ex.keepX) tx = Math.min(tm.grid[0].length-2, Math.max(1, S.x));
+      if(ex.side==='n') ty = tm.grid.length-2;
+      if(ex.side==='s') ty = 1;
+      if(ex.side==='w') tx = tm.grid[0].length-2;
+      if(ex.side==='e') tx = 1;
+      if(ex.tx!==undefined && !ex.keepX && (ex.side==='w'||ex.side==='e')) ty = ex.ty;
+      fadeWarp(ex.to, tx, ty);
+    }
+    return;
+  }
+  if(!walkable(m,nx,ny)) return;
+  // しっぽ更新
+  S.trail.unshift({x:S.x, y:S.y});
+  if(S.trail.length>4) S.trail.pop();
+  moveAnim = {fx:S.x, fy:S.y, tx:nx, ty:ny, t0:performance.now()};
+  S.x = nx; S.y = ny;
+}
+function tryInteract(){
+  const [dx,dy] = DIRV[S.dir];
+  const n = npcAt(S.x+dx, S.y+dy) || npcAt(S.x, S.y);
+  if(n && n.talk){ SE.ok(); n.talk(); }
+}
+
+/* ---------------- メニュー ---------------- */
+let menuOpen = false;
+function onB(){
+  if(busy){ return; }
+  if(menuOpen){ closeMenu(); return; }
+  if(!S || mode!=='field') return;
+  openMenu();
+}
+function closeMenu(){ menuOpen=false; busy=false; $('menu').style.display='none'; $('subwin').style.display='none'; }
+function navMenu(idx){
+  navSet($('menu').children, {idx: idx||0, onCancel: closeMenu});
+}
+function openMenu(){
+  menuOpen = true; busy = true; SE.ok();
+  const mn = $('menu'); mn.innerHTML=''; mn.style.display='block';
+  const items = ['つよさ','どうぐ','サイ','メロディ','セーブ','パスワード','とじる'];
+  items.forEach((label, li)=>{
+    const d = document.createElement('div'); d.textContent = label;
+    const h = async e=>{
+      e.preventDefault();
+      SE.ok();
+      if(label==='とじる'){ closeMenu(); return; }
+      if(label==='つよさ'){ showStatus(); navMenu(li); }
+      if(label==='どうぐ') await menuItems(li);
+      if(label==='サイ') await menuPsi(li);
+      if(label==='メロディ'){ playMelody(mc()||0); showSub(`<b>♪ メロディ ${mc()} / 8</b><br>`+
+        [['m1','いんせきのうた'],['m2','もりのうた'],['m3','まちのうた'],['m4','みずのうた'],
+         ['m5','うみのうた'],['m6','ひかりのうた'],['m7','ゆめのうた'],['m8','かぞくのうた']]
+        .map(([k,n],i)=>`${F()[k]?'♪':'・'} ${F()[k]?n:'？？？'}`).join('<br>')); navMenu(li); }
+      if(label==='セーブ'){ const ok = await saveGame(); showSub(ok?'<b>セーブしました！</b>':'セーブできませんでした…'); navMenu(li); }
+      if(label==='パスワード') await menuPassword(li);
+    };
+    d.addEventListener('touchstart',h,{passive:false}); d.addEventListener('mousedown',h);
+    mn.appendChild(d);
+  });
+  navMenu(0);
+}
+function showSub(html){ const s=$('subwin'); s.classList.remove('statwin'); s.innerHTML=html; s.style.display='block'; }
+function showStatus(){
+  const s = $('subwin');
+  s.innerHTML = S.party.map(c=>
+    `<b>${c.e}${c.n}</b> Lv.${c.lv}　<span class="hp" style="color:#8f8">HP ${Math.round(c.hp)}/${c.mhp}</span> <span style="color:#8cf">PP ${Math.round(c.pp)}/${c.mpp}</span><br>こうげき${Math.round(c.atk)}　ぼうぎょ${Math.round(c.def)}　はやさ${Math.round(c.spd)}　つぎ${Math.max(0,c.next-c.exp)}`
+  ).join('<hr style="border-color:#345">');
+  s.classList.add('statwin');
+  s.style.display='block';
+}
+/* ===== ふっかつのじゅもん（セーブのエクスポート/インポート） ===== */
+async function menuPassword(mi){
+  const sub = $('subwin'); sub.classList.remove('statwin');
+  sub.innerHTML = '<b>ふっかつのじゅもん</b><br><span style="opacity:.7;font-size:11px">セーブを テキストで かきだし／よみこみ</span><br>'
+    + '<span class="pw" data-a="out">▷ じゅもんを かきだす</span><br>'
+    + '<span class="pw" data-a="in">▷ じゅもんで よみこむ</span><br>'
+    + '<span class="pw" data-a="back">▷ もどる</span>';
+  sub.style.display='block';
+  sub.querySelectorAll('.pw').forEach(el=>{
+    const h = async e=>{ e.preventDefault(); e.stopPropagation(); SE.ok();
+      const a = el.dataset.a;
+      if(a==='out') await exportCode(mi);
+      else if(a==='in') await importCode(mi);
+      else { sub.style.display='none'; navMenu(mi); }
+    };
+    el.addEventListener('touchstart',h,{passive:false}); el.addEventListener('mousedown',h);
+  });
+  navSet(sub.querySelectorAll('.pw'), {onCancel:()=>{ sub.style.display='none'; navMenu(mi); }});
+}
+function makeCode(){
+  return 'EM1-' + btoa(unescape(encodeURIComponent(JSON.stringify(S))));
+}
+async function exportCode(mi){
+  let code = '';
+  try{ code = makeCode(); }
+  catch(err){ toast('かきだしに しっぱいした…'); setTimeout(hideToast,1400); navMenu(mi); return; }
+  const sub = $('subwin'); sub.classList.remove('statwin');
+  sub.innerHTML = '<b>↓この じゅもんを コピーして ほかんしてね</b><br>'
+    + `<textarea id="pwout" readonly style="width:96%;height:84px;margin-top:4px;font-size:11px;line-height:1.3;background:#0c0c1a;color:#bfe;border:1px solid #46c;border-radius:6px;padding:5px;resize:none;-webkit-user-select:text;user-select:text">${code}</textarea>`
+    + '<br><span class="pw" data-a="copy">▷ コピーする</span>　<span class="pw" data-a="back">▷ もどる</span>';
+  sub.style.display='block';
+  const ta = $('pwout');
+  sub.querySelectorAll('.pw').forEach(el=>{
+    const h = async e=>{ e.preventDefault(); e.stopPropagation(); SE.ok();
+      if(el.dataset.a==='copy'){
+        let ok = false;
+        try{ ta.focus(); ta.select(); ta.setSelectionRange(0, code.length); ok = document.execCommand('copy'); }catch(_){}
+        if(navigator.clipboard){ try{ await navigator.clipboard.writeText(code); ok = true; }catch(_){} }
+        toast(ok ? 'コピーしました！' : 'てどうで えらんで コピーしてね'); setTimeout(hideToast,1500);
+      } else { menuPassword(mi); }
+    };
+    el.addEventListener('touchstart',h,{passive:false}); el.addEventListener('mousedown',h);
+  });
+  navSet(sub.querySelectorAll('.pw'), {onCancel:()=>menuPassword(mi)});
+}
+async function importCode(mi){
+  let inp = null;
+  try{ inp = window.prompt('じゅもん（EM1-…）を はりつけてね'); }catch(_){ inp = null; }
+  if(inp==null || !inp.trim()){ menuPassword(mi); return; }
+  const sv = decodeCode(inp.trim());
+  if(!sv){ toast('じゅもんが ちがうみたい…'); setTimeout(hideToast,1600); menuPassword(mi); return; }
+  S = sv;
+  await saveGame();
+  $('subwin').style.display='none';
+  closeMenu();
+  playBGM(mapTrack(S.map));
+  await dialog(['<b>じゅもんを よみこんだ！</b>', `（メロディ：<b>${mc()} / 8</b>／ばしょ：${MAPS[S.map]?MAPS[S.map].name:S.map}）`]);
+}
+function decodeCode(raw){
+  try{
+    let s = raw.replace(/\s+/g,'');
+    if(s.startsWith('EM1-')) s = s.slice(4);
+    const json = decodeURIComponent(escape(atob(s)));
+    const sv = JSON.parse(json);
+    if(!sv || !Array.isArray(sv.party) || !sv.party.length) return null;
+    // 整合性のバックフィル
+    sv.party.forEach(c=>{
+      if(CHARDEF[c.id]){ c.n = CHARDEF[c.id].n; c.e = CHARDEF[c.id].e; }
+      if(c.thp===undefined) c.thp = c.hp;
+      c.poison = 0; c.sleep = 0; c._faint = false;
+    });
+    if(!sv.flags) sv.flags = {};
+    if(!sv.inv) sv.inv = {};
+    if(!sv.trail) sv.trail = [];
+    if(sv.dir===undefined) sv.dir = 'down';
+    if(!sv.map || !MAPS[sv.map]) sv.map = 'home';
+    return sv;
+  }catch(e){ return null; }
+}
+async function pickTarget(){
+  return new Promise(res=>{
+    showSub('<b>だれに？</b><br>' + S.party.map((c,i)=>`<span class="tgt" data-i="${i}">▷ ${c.e}${c.n}（HP ${Math.round(c.hp)}/${c.mhp}）</span>`).join('<br>') + '<br><span class="tgt" data-i="-1">▷ やめる</span>');
+    $('subwin').querySelectorAll('.tgt').forEach(el=>{
+      const h = e=>{e.preventDefault(); e.stopPropagation(); SE.ok(); res(+el.dataset.i);};
+      el.addEventListener('touchstart',h,{passive:false}); el.addEventListener('mousedown',h);
+    });
+    const tg = [...$('subwin').querySelectorAll('.tgt')];
+    navSet(tg, {onCancel: ()=>tg[tg.length-1].dispatchEvent(new MouseEvent('mousedown',{cancelable:true}))});
+  });
+}
+let inBattle = false;
+function useItemOn(key, c){
+  const it = ITEMS[key];
+  if(inBattle){
+    if(it.full){ c.thp=c.mhp; c.pp=c.mpp; }
+    if(it.heal && !c._faint) c.thp = Math.min(c.mhp, c.thp+it.heal);
+    if(it.pp) c.pp = Math.min(c.mpp, c.pp+it.pp);
+  } else {
+    if(it.full){ c.hp=c.mhp; c.thp=c.mhp; c.pp=c.mpp; }
+    if(it.heal){ c.hp = Math.min(c.mhp, c.hp+it.heal); c.thp=c.hp; }
+    if(it.pp) c.pp = Math.min(c.mpp, c.pp+it.pp);
+  }
+  S.inv[key]--; if(S.inv[key]<=0) delete S.inv[key];
+  SE.heal();
+}
+async function menuItems(mi){
+  const keys = Object.keys(S.inv);
+  if(!keys.length){ showSub('どうぐを なにも もっていない。'); navMenu(mi); return; }
+  showSub('<b>どうぐ</b><br>' + keys.map(k=>`<span class="it" data-k="${k}">▷ ${ITEMS[k].n} ×${S.inv[k]}</span>`).join('<br>'));
+  $('subwin').querySelectorAll('.it').forEach(el=>{
+    const h = async e=>{
+      e.preventDefault(); e.stopPropagation(); SE.ok();
+      const k = el.dataset.k;
+      const i = await pickTarget();
+      if(i>=0){ useItemOn(k, S.party[i]); showSub(`${S.party[i].n}に ${ITEMS[k].n}を つかった！`); navMenu(mi); }
+      else menuItems(mi);
+    };
+    el.addEventListener('touchstart',h,{passive:false}); el.addEventListener('mousedown',h);
+  });
+  navSet($('subwin').querySelectorAll('.it'),
+    {onCancel: ()=>{ $('subwin').style.display='none'; navMenu(mi); }});
+}
+async function menuPsi(mi){
+  const all = [];
+  S.party.forEach(c=>psiList(c,true).forEach(([k,p])=>all.push({c,k,p})));
+  if(!all.length){ showSub('フィールドで つかえる サイが ない。'); navMenu(mi); return; }
+  showSub('<b>サイ</b><br>' + all.map((a,i)=>`<span class="ps" data-i="${i}">▷ ${a.c.n}：${a.p.n}（PP${a.p.pp}）</span>`).join('<br>'));
+  $('subwin').querySelectorAll('.ps').forEach(el=>{
+    const h = async e=>{
+      e.preventDefault(); e.stopPropagation(); SE.ok();
+      const a = all[+el.dataset.i];
+      if(a.c.pp < a.p.pp){ showSub('PPが たりない！'); return; }
+      if(a.p.type==='healA'){
+        a.c.pp -= a.p.pp; S.party.forEach(t=>{t.hp=Math.min(t.mhp,t.hp+a.p.pow); t.thp=t.hp;}); SE.heal();
+        showSub('みんなの HPが かいふくした！'); navMenu(mi);
+      } else {
+        const i = await pickTarget();
+        if(i>=0){ a.c.pp -= a.p.pp; const t=S.party[i]; t.hp=Math.min(t.mhp,t.hp+a.p.pow); t.thp=t.hp; SE.heal();
+          showSub(`${t.n}の HPが かいふくした！`); navMenu(mi); }
+        else menuPsi(mi);
+      }
+    };
+    el.addEventListener('touchstart',h,{passive:false}); el.addEventListener('mousedown',h);
+  });
+  navSet($('subwin').querySelectorAll('.ps'),
+    {onCancel: ()=>{ $('subwin').style.display='none'; navMenu(mi); }});
+}
+
+/* ---------------- メインループ ---------------- */
+let mode = 'title';
+function loop(){
+  requestAnimationFrame(loop);
+  if(mode==='field' && S){
+    if(S.map !== lastRoamMap){ lastRoamMap = S.map; spawnRoamers(); }
+    if(moveAnim && performance.now()-moveAnim.t0 >= 150){
+      moveAnim = null;
+      stepDone();
+    }
+    if(!busy && !moveAnim){
+      if(aDown){ aDown=false; if(performance.now() > talkCool) tryInteract(); }
+      if(held.up) tryMove('up');
+      else if(held.down) tryMove('down');
+      else if(held.left) tryMove('left');
+      else if(held.right) tryMove('right');
+    } else aDown = false;
+    draw();
+  }
+}
+loop();
+setInterval(moveRoamers, 460); // 敵シンボルの徘徊
+
+/* ---------------- バトル ---------------- */
+const bstyle = document.createElement('style');
+bstyle.textContent = `
+#bbg.bgn{background:
+  repeating-linear-gradient(45deg,rgba(40,88,200,.25) 0 26px,rgba(20,32,70,.25) 26px 52px),
+  repeating-linear-gradient(-45deg,#1c2a58 0 26px,#142046 26px 52px);
+  animation:bgm 2.5s linear infinite, hue 9s linear infinite;}
+#bbg.bgf{background:repeating-radial-gradient(circle at 50% 45%, #401a60 0 28px, #200a40 28px 56px, #102 56px 84px);
+  animation:bgm 1.6s linear infinite, hue 3s linear infinite;}
+@keyframes bgm{to{background-position:74px 74px,74px 74px}}
+@keyframes hue{to{filter:hue-rotate(360deg)}}
+.bfoe.sel .icon{filter:drop-shadow(0 0 10px #ffd75e);}
+.bfoe.crit{animation:critz .4s;}
+@keyframes critz{0%,100%{transform:scale(1)}40%{transform:scale(1.25) rotate(-6deg)}}`;
+document.head.appendChild(bstyle);
+
+const rnd = (a,b)=>a+Math.random()*(b-a);
+let LAST_CRIT = false;
+function physDmg(atk, def, mult=1){
+  let d = (atk*2*mult - def*1.1) * rnd(0.85,1.15);
+  LAST_CRIT = Math.random()<0.0625;
+  if(LAST_CRIT) d*=1.8;
+  return Math.max(1, Math.round(d));
+}
+
+/* ===== 戦闘演出オーバーレイ ===== */
+function fxSmaaash(){
+  const fx=$('bfx'); fx.innerHTML='<div class="smaaash">SMAAAASH!!</div>';
+  fx.style.display='flex';
+  flashScreen('#fff', .9);
+  SE.crit();
+  setTimeout(()=>{ fx.style.display='none'; }, 560);
+}
+function fxWord(txt, col){
+  const fx=$('bfx'); fx.innerHTML=`<div class="stword" style="color:${col||'#fff'}">${txt}</div>`;
+  fx.style.display='flex';
+  setTimeout(()=>{ fx.style.display='none'; }, 800);
+}
+function flashScreen(col, op){
+  const fl=$('flashlayer'); fl.style.background=col||'#fff';
+  fl.style.transition='none'; fl.style.opacity=op||.6;
+  requestAnimationFrame(()=>{ fl.style.transition='opacity .35s'; fl.style.opacity=0; });
+}
+
+/* ===== ドラムロール式HP ===== */
+let hpRoll = null, rollActive = -1;
+function startHPRoll(){
+  if(hpRoll) return;
+  hpRoll = setInterval(()=>{
+    let changed=false, tick=false;
+    for(const c of S.party){
+      const tgt = Math.round(c.thp);
+      if(Math.round(c.hp) === tgt) { c.hp = tgt; continue; }
+      const diff = tgt - c.hp;
+      const stepMag = Math.max(1, Math.ceil(Math.abs(diff)/7));
+      c.hp += Math.sign(diff)*Math.min(stepMag, Math.abs(diff));
+      if(c.hp<0) c.hp=0;
+      if(c.hp>c.mhp) c.hp=c.mhp;
+      changed=true; tick=true;
+    }
+    if(tick) SE.tick();
+    if(changed) renderPartyCards(rollActive);
+  }, 55);
+}
+function stopHPRoll(){ if(hpRoll){ clearInterval(hpRoll); hpRoll=null; } }
+function rollSettled(){ return S.party.every(c=>Math.round(c.hp)===Math.round(c.thp)); }
+function waitRoll(){ return new Promise(res=>{ const t=setInterval(()=>{ if(rollSettled()){clearInterval(t);res();} },40); }); }
+/* 状態異常の付与 */
+const FOE_STATUS = { kinoko:{doku:.30}, slug:{doku:.22}, sarari:{doku:.18},
+  bat:{nemu:.30}, kamome:{nemu:.28}, dragon:{nemu:.22}, golem:{doku:.16} };
+function btap(){
+  return new Promise(res=>{
+    const el = $('bmsg');
+    let done = false;
+    const h = e=>{ if(done) return; done = true;
+      if(e&&e.preventDefault) e.preventDefault();
+      el.removeEventListener('touchstart',h); el.removeEventListener('mousedown',h);
+      window.removeEventListener('keydown',kh); res(); };
+    const kh = e=>{ if(e.key==='z'||e.key===' '||e.key==='Enter'){h(e);} };
+    el.addEventListener('touchstart',h,{passive:false}); el.addEventListener('mousedown',h);
+    window.addEventListener('keydown',kh);
+    onceA(h); // Aボタンでも送れる
+  });
+}
+async function bsay(text, noWait){
+  const el = $('bmsg');
+  await typeText(el, text + (noWait?'':' <span style="opacity:.6">▼</span>'));
+  if(!noWait) await btap();
+}
+function renderPartyCards(active){
+  $('bparty').innerHTML = S.party.map((c,i)=>{
+    const low = c.hp>0 && c.hp <= c.mhp*0.25;
+    const badges = (c.poison>0?'<span class="badge b-doku">どく</span>':'')
+                 + (c.sleep>0?'<span class="badge b-nemu">ねむり</span>':'');
+    return `<div class="pcard ${c.hp<=0?'ko':''} ${i===active?'act':''} ${low?'lowhp':''}">${sprIcon(c.id)||c.e}${c.n}${badges}<br>
+     <span class="hp">HP ${Math.max(0,Math.round(c.hp))}</span> <span class="pp">PP ${Math.round(c.pp)}</span></div>`;
+  }).join('');
+}
+function renderFoes(foes){
+  $('benemies').innerHTML = foes.map((f,i)=>
+    `<div class="bfoe ${f.hp<=0?'dead':''}" data-i="${i}"><div class="icon">${foeIcon(f.key)||f.e}</div><div class="fname">${f.n}</div></div>`).join('');
+}
+function pickFoe(foes){
+  const alive = foes.map((f,i)=>f.hp>0?i:-1).filter(i=>i>=0);
+  if(alive.length===1) return Promise.resolve(alive[0]);
+  return new Promise(res=>{
+    const sels = [];
+    $('benemies').querySelectorAll('.bfoe').forEach(el=>{
+      const i = +el.dataset.i;
+      if(foes[i].hp<=0) return;
+      el.classList.add('sel');
+      const h = e=>{e.preventDefault(); SE.ok(); $('benemies').querySelectorAll('.bfoe').forEach(x=>x.classList.remove('sel')); res(i);};
+      el.addEventListener('touchstart',h,{passive:false}); el.addEventListener('mousedown',h);
+      sels.push(el);
+    });
+    navSet(sels, {cols:sels.length});
+    bsay('どの てきに？', true);
+  });
+}
+function showList(rows){ // rows: [{label, val}] -> Promise<val|null>
+  return new Promise(res=>{
+    const bl = $('blist'); bl.style.display='block';
+    bl.innerHTML = rows.map((r,i)=>`<div data-i="${i}">▷ ${r.label}</div>`).join('') + `<div data-i="-1">▷ もどる</div>`;
+    bl.querySelectorAll('div').forEach(el=>{
+      const h = e=>{e.preventDefault(); SE.ok(); bl.style.display='none';
+        const i = +el.dataset.i; res(i<0?null:rows[i].val);};
+      el.addEventListener('touchstart',h,{passive:false}); el.addEventListener('mousedown',h);
+    });
+    const lis = bl.querySelectorAll('div');
+    navSet(lis, {onCancel: ()=>lis[lis.length-1].dispatchEvent(new MouseEvent('mousedown',{cancelable:true}))});
+  });
+}
+function chooseCmd(c, isFinal){
+  return new Promise(res=>{
+    const bc = $('bcmds'); bc.style.display='grid';
+    const cmds = isFinal ? ['たたかう','サイ','いのる','どうぐ','まもる'] : ['たたかう','サイ','どうぐ','まもる','にげる'];
+    bc.innerHTML = cmds.map(x=>`<div class="bcmd" data-c="${x}">${x}</div>`).join('');
+    bsay(`${c.e}${c.n}は どうする？`, true);
+    bc.querySelectorAll('.bcmd').forEach(el=>{
+      const h = e=>{e.preventDefault(); SE.ok(); res(el.dataset.c);};
+      el.addEventListener('touchstart',h,{passive:false}); el.addEventListener('mousedown',h);
+    });
+    navSet(bc.querySelectorAll('.bcmd'), {cols:2});
+  });
+}
+async function battle(ids, opts={}){
+  busy = true; inBattle = true; battleActive = true;
+  const foes = ids.map(k=>({key:k, ...FOES[k], mhp:FOES[k].hp, defMod:1}));
+  const isBoss = !opts.final && foes.some(f=>f.boss);
+  playBGM(opts.final ? 'final' : (isBoss ? 'boss' : 'battle'));
+  const wasMenu = menuOpen; if(wasMenu) closeMenu(); busy = true;
+  const B = $('battle'); B.style.display='flex';
+  $('bbg').className = opts.final ? 'bgf' : (isBoss ? 'bgboss' : 'bgn');
+  $('bcmds').style.display='none'; $('blist').style.display='none';
+  // 状態の初期化（ドラムロール用の表示HP・状態異常）
+  S.party.forEach(c=>{ c.thp = c.hp; c.poison = 0; c.sleep = 0; c._faint = (c.hp<=0); });
+  renderFoes(foes); renderPartyCards(-1);
+  startHPRoll();
+  let shield = false, pray = 0, result = null, round = 0;
+  SE.hit();
+  await bsay(foes.length>1 ? `${foes[0].n}たちが あらわれた！` : `${foes[0].n}が あらわれた！`);
+  if(opts.first==='player') await bsay('<b>せんせいこうげき！</b> こちらが さきに うごける！');
+  else if(opts.first==='enemy') await bsay('<b>ふいうちを うけた！</b> てきが さきに しかけてきた！');
+  const foesAlive = ()=>foes.filter(f=>f.hp>0);
+  const ptyTargets= ()=>S.party.filter(c=>!c._faint && c.hp>0);
+  async function announceFaints(){
+    for(const c of S.party){
+      if(c._faint) continue;
+      if(Math.round(c.hp)<=0 && c.thp<=0){
+        c._faint = true; c.hp = 0; c.thp = 0; c.poison = 0; c.sleep = 0;
+        renderPartyCards(-1);
+        await bsay(`<b>${c.n}は たおれてしまった…</b>`);
+      }
+    }
+  }
+  while(!result){
+    round++;
+    const skipParty   = (round===1 && opts.first==='enemy');
+    const skipEnemies = (round===1 && opts.first==='player');
+    S.party.forEach(c=>c.guard=false);
+    const acts = [];
+    // --- コマンド選択 ---
+    if(!skipParty){
+    for(let i=0;i<S.party.length;i++){
+      const c = S.party[i];
+      if(c._faint || c.hp<=0) continue;
+      if(c.sleep>0){
+        renderPartyCards(i); SE.sleep();
+        c.sleep--;
+        await bsay(`${c.n}は <b>ねむっている</b>…… Zzz`);
+        if(c.sleep<=0) await bsay(`${c.n}は ぱっちり めを さました！`);
+        continue;
+      }
+      renderPartyCards(i);
+      let done = false;
+      while(!done){
+        const cmd = await chooseCmd(c, !!opts.final);
+        if(cmd==='たたかう'){
+          const t = await pickFoe(foes);
+          acts.push({who:c, spd:c.spd, run:async()=>{
+            const f = foes[t].hp>0 ? foes[t] : foesAlive()[0]; if(!f) return;
+            if(opts.final){ await bsay(`${c.n}の こうげき！ …しかし ノイズには <b>こうかが なかった！</b>`); return; }
+            const d = physDmg(c.atk, f.def*f.defMod); const crit = LAST_CRIT;
+            f.hp -= d; SE.hit();
+            if(crit){ fxSmaaash(); critFoe(foes,f); } else flashFoe(foes, f);
+            await bsay(crit
+              ? `${c.n}の <b>SMAAAASH!!</b> ${f.n}に <b>${d}</b>の だいダメージ！！`
+              : `${c.n}の こうげき！ ${f.n}に <b>${d}</b>の ダメージ！`);
+            await checkFoe(foes, f);
+          }});
+          done = true;
+        }
+        else if(cmd==='サイ'){
+          const lst = psiList(c).map(([k,p])=>({label:`${p.n}（PP${p.pp}）`, val:p}));
+          if(!lst.length){ await bsay(`${c.n}は まだ サイを つかえない！`); continue; }
+          const p = await showList(lst);
+          if(!p) continue;
+          if(c.pp < p.pp){ await bsay('PPが たりない！'); continue; }
+          let tgt = null;
+          if(p.type==='atk1' && !opts.final) tgt = await pickFoe(foes);
+          if(p.type==='heal') tgt = await showList(S.party.map((m,i)=>({label:`${m.e}${m.n}（HP${Math.max(0,Math.round(m.thp))}）`,val:i})));
+          if(p.type==='heal' && tgt===null) continue;
+          acts.push({who:c, spd:c.spd, run:async()=>{
+            c.pp -= p.pp;
+            if(opts.final && (p.type==='atk1'||p.type==='atkA')){
+              await bsay(`${c.n}の ${p.n}！ …しかし ノイズには <b>こうかが なかった！</b>`); return; }
+            if(p.type==='atk1'){
+              const f = (tgt!==null && foes[tgt].hp>0)?foes[tgt]:foesAlive()[0]; if(!f) return;
+              const d = physDmg(c.atk, f.def*f.defMod, p.pow/1.6); const crit = LAST_CRIT;
+              f.hp -= d; SE.hit();
+              if(crit){ fxSmaaash(); critFoe(foes,f); } else flashFoe(foes,f);
+              await bsay(crit
+                ? `${c.n}の <b>${p.n}</b>！ SMAAAASH!! ${f.n}に <b>${d}</b>の だいダメージ！！`
+                : `${c.n}の <b>${p.n}</b>！ ${f.n}に <b>${d}</b>の ダメージ！`);
+              await checkFoe(foes,f);
+            } else if(p.type==='atkA'){
+              await bsay(`${c.n}の <b>${p.n}</b>！ まばゆい ひかり！`);
+              for(const f of foesAlive()){
+                const d = physDmg(c.atk, f.def*f.defMod, p.pow/1.6);
+                f.hp -= d; SE.hit(); flashFoe(foes,f);
+                await bsay(`${f.n}に <b>${d}</b>の ダメージ！`);
+                await checkFoe(foes,f);
+              }
+            } else if(p.type==='heal'){
+              const m = S.party[tgt];
+              if(!m._faint){ m.thp = Math.min(m.mhp, m.thp+p.pow); }
+              SE.heal(); renderPartyCards(-1);
+              await bsay(`${c.n}の <b>${p.n}</b>！ ${m.n}の HPが <b>${p.pow}</b> かいふく！`);
+            } else if(p.type==='healA'){
+              S.party.forEach(m=>{ if(!m._faint) m.thp=Math.min(m.mhp,m.thp+p.pow); }); SE.heal(); renderPartyCards(-1);
+              await bsay(`${c.n}の <b>${p.n}</b>！ みんなの HPが かいふくした！`);
+            } else if(p.type==='buff'){
+              shield = true; SE.heal();
+              await bsay(`${c.n}の <b>${p.n}</b>！ みんなの ぼうぎょが あがった！`);
+            } else if(p.type==='debuf'){
+              foes.forEach(f=>f.defMod=0.65); SE.hit();
+              await bsay(`${c.n}の <b>${p.n}</b>！ ワンッ！！ てきの ぼうぎょが さがった！`);
+            }
+          }});
+          done = true;
+        }
+        else if(cmd==='どうぐ'){
+          const keys = Object.keys(S.inv);
+          if(!keys.length){ await bsay('どうぐを もっていない！'); continue; }
+          const k = await showList(keys.map(k=>({label:`${ITEMS[k].n} ×${S.inv[k]}`, val:k})));
+          if(!k) continue;
+          const tgt = await showList(S.party.map((m,i)=>({label:`${m.e}${m.n}（HP${Math.max(0,Math.round(m.thp))}）`,val:i})));
+          if(tgt===null) continue;
+          acts.push({who:c, spd:c.spd+100, run:async()=>{
+            if(!S.inv[k]) return;
+            useItemOn(k, S.party[tgt]); renderPartyCards(-1);
+            await bsay(`${c.n}は ${S.party[tgt].n}に <b>${ITEMS[k].n}</b>を つかった！`);
+          }});
+          done = true;
+        }
+        else if(cmd==='まもる'){
+          c.guard = true;
+          acts.push({who:c, spd:c.spd+200, run:async()=>{ await bsay(`${c.n}は みを まもっている。`); }});
+          done = true;
+        }
+        else if(cmd==='いのる'){
+          acts.push({who:c, spd:c.spd, run:async()=>{
+            pray++;
+            const ptexts = [
+              `${c.n}は こころを こめて <b>いのった</b>……<br>とおくで <b>ママのこえ</b>。「ちゃんと ごはん つくって まってるからね」`,
+              `${c.n}は <b>いのった</b>……<br><b>パパのこえ</b>が ひびく。「だいじょうぶだ。パパが ついてるぞ」`,
+              `${c.n}は そらに むかって <b>いのった</b>……<br>ひだまりタウンの <b>みんなのこえ</b>が かさなっていく。`,
+              `みんなの おもいが ひとつに なる……<br><b>8つのメロディ</b>が せかいじゅうに ひびきわたった！！`];
+            playMelody(Math.min(8,pray*2));
+            await bsay(ptexts[Math.min(pray,4)-1]);
+            SE.hit(); flashFoe(foes, foes[0]);
+            if(pray>=4){
+              foes[0].hp = 0; renderFoes(foes);
+              await bsay('ノイズは ひかりに つつまれて…… <b>しずかに とけて きえた。</b>');
+              result = 'win';
+            } else {
+              await bsay(`ノイズに <b>おおきな ひび</b>が はいった！（${pray}/4）`);
+            }
+          }});
+          done = true;
+        }
+        else if(cmd==='にげる'){
+          acts.push({who:c, spd:999, flee:true, run:async()=>{
+            if(foes.some(f=>f.boss)){ await bsay('にげられない！！'); return; }
+            if(Math.random()<0.75){ await bsay(`${c.n}たちは にげだした！`); result='flee'; }
+            else await bsay('にげられなかった！');
+          }});
+          done = true;
+        }
+      }
+    }
+    }
+    $('bcmds').style.display='none'; renderPartyCards(-1);
+    // --- 敵の行動 ---
+    if(!skipEnemies){
+    for(const f of foesAlive()){
+      acts.push({foe:f, spd:f.spd, run:async()=>{
+        if(f.hp<=0 || result) return;
+        const targets = ptyTargets(); if(!targets.length) return;
+        const t = targets[Math.floor(Math.random()*targets.length)];
+        let d; LAST_CRIT = false;
+        if(f.final) d = Math.round(rnd(16,30));
+        else d = physDmg(f.atk, t.def*(shield?1.6:1));
+        if(t.guard) d = Math.max(1, Math.round(d/2));
+        const crit = LAST_CRIT && !f.final;
+        t.thp -= d; SE.hit();
+        if(crit){ flashScreen('#ff2a2a',.55); fxWord('CRITICAL!','#ff6a6a'); }
+        renderPartyCards(-1);
+        const verbs = f.final ? 'こころを ゆさぶった' : 'おそいかかった';
+        await bsay(crit
+          ? `${f.n}の かいしんの いちげき！ ${t.n}に <b>${d}</b>の だいダメージ！`
+          : `${f.n}が ${t.n}に ${verbs}！ <b>${d}</b>の ダメージ！`);
+        // 状態異常の付与
+        const st = FOE_STATUS[f.key];
+        if(st && !t._faint && t.thp>0){
+          if(st.doku && !t.poison && Math.random()<st.doku){
+            t.poison = 3; SE.poison(); renderPartyCards(-1);
+            await bsay(`${t.n}は <b>どく</b>を うけてしまった！`);
+          } else if(st.nemu && !t.sleep && Math.random()<st.nemu){
+            t.sleep = 2; SE.sleep(); renderPartyCards(-1);
+            await bsay(`${t.n}は <b>ねむって</b>しまった！ Zzz`);
+          }
+        }
+      }});
+    }
+    }
+    acts.sort((a,b)=>b.spd-a.spd);
+    for(const a of acts){
+      if(result) break;
+      if(a.who && (a.who._faint || a.who.hp<=0)) continue;
+      if(a.foe && a.foe.hp<=0) continue;
+      await a.run();
+      await announceFaints();
+      if(!result && !foesAlive().length) result = 'win';
+      if(!result && S.party.every(c=>c._faint)) result = 'lose';
+    }
+    // --- ターン終了：どくダメージ＆気絶判定 ---
+    if(!result){
+      for(const c of S.party){
+        if(c._faint || c.poison<=0) continue;
+        c.poison--;
+        const pd = Math.max(2, Math.round(c.mhp*0.06));
+        c.thp -= pd; SE.poison(); renderPartyCards(-1);
+        await bsay(`${c.n}は <b>どく</b>で <b>${pd}</b>の ダメージ！`);
+        if(c.poison<=0) await bsay(`${c.n}の どくは きえた。`);
+      }
+      await waitRoll();
+      await announceFaints();
+    }
+    if(!result && !foesAlive().length) result = 'win';
+    if(!result && S.party.every(c=>c._faint)) result = 'lose';
+  }
+  // ロールを確定させて 表示HP=実HP に同期
+  await waitRoll(); stopHPRoll();
+  S.party.forEach(c=>{ c.hp = Math.max(0, Math.round(c.thp)); c.thp = c.hp; c.poison=0; c.sleep=0; });
+  // --- 結果 ---
+  if(result==='win' && !opts.final){
+    const exp = foes.reduce((s,f)=>s+f.exp,0), gold = foes.reduce((s,f)=>s+f.g,0);
+    SE.lvup();
+    await bsay(`<b>たたかいに かった！</b><br>けいけんち <b>${exp}</b>、<b>${gold}えん</b>を てにいれた！`);
+    S.money += gold;
+    for(const c of S.party){
+      if(c._faint || c.hp<=0){ c.hp=1; c.thp=1; c._faint=false; continue; }
+      c.exp += exp;
+      while(c.exp >= c.next){
+        c.exp -= c.next; levelUp(c);
+        await bsay(`<b>${c.e}${c.n}は レベル${c.lv}に あがった！</b>`);
+        const learned = Object.values(PSI).find(p=>p.who===c.id && p.lv===c.lv);
+        if(learned) await bsay(`${c.n}は <b>${learned.n}</b>を おぼえた！`);
+      }
+    }
+  }
+  S.party.forEach(c=>{ c._faint=false; });
+  if(result==='lose'){
+    SE.dead();
+    await bsay('めのまえが まっくらに なった……');
+  }
+  B.style.display='none'; busy = false; inBattle = false; battleActive = false;
+  playBGM(mapTrack(S.map));
+  if(result==='lose'){
+    S.money = Math.floor(S.money/2);
+    healAll();
+    await fadeWarp('home', 4, 3);
+    await dialog(['きがつくと いえの ベッドの うえだった。',
+      say('ママ','「もう！ むちゃ しないの！ おこづかい はんぶん ぼっしゅうです！」'),
+      'HPとPPは かいふくした。もういちど がんばろう。']);
+  }
+  return result;
+}
+function flashFoe(foes, f){
+  const i = foes.indexOf(f);
+  const el = $('benemies').querySelector(`[data-i="${i}"]`);
+  if(el){ el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit'); }
+}
+async function checkFoe(foes, f){
+  if(f.hp<=0){
+    renderFoes(foes);
+    await bsay(`<b>${f.n}を やっつけた！</b>`);
+  }
+}
+function critFoe(foes, f){
+  const i = foes.indexOf(f);
+  const el = $('benemies').querySelector(`[data-i="${i}"]`);
+  if(el){ el.classList.remove('crit'); void el.offsetWidth; el.classList.add('crit');
+    setTimeout(()=>el && el.classList.remove('crit'), 420); }
+}
+
+/* ---------------- エンディング ---------------- */
+async function ending(){
+  F().clear = true;
+  stopBGM(); BGM.want = null;
+  await dialog([
+    'ノイズの からだが ひかりに とけていく……',
+    say('ノイズ','「ｳﾀ…ｱﾀﾀｶｲ……ﾜﾀｼﾓ…ｳﾀｲﾀｶｯﾀ…ﾀﾞｹ……」'),
+    '<b>ノイズは しずかに きえた。</b>',
+    'そらに ほしが もどってくる。',
+    say('ほしのこえ','「ありがとう。ちきゅうの うたは まもられました。」'),
+    say('ほしのこえ','「さあ、かえりましょう。<b>かぞくの まつ いえへ</b>。」'),
+  ]);
+  busy = true; playMelody(8); await sleep(3200); busy = false;
+  await fadeWarp('home', 4, 3);
+  healAll();
+  await dialog([
+    say('ママ','「おかえりなさい！ ……もう、しんぱいしたんだから。」'),
+    say('とき','「えへへ、ただいま！ おなか ぺこぺこ〜！」'),
+    say('琥太郎','「わん！ わんわん！」'),
+    'そのとき、でんわが なった。 ……パパからだ。',
+    say('パパ','「よく がんばったな、るい。パパは おまえたちの ことが せかいで いちばんの じまんだよ。」'),
+    'まどの そとで、ほしが やさしく またたいている。',
+    '<b>── ちきゅうは、きょうも うたっている ──</b>',
+  ]);
+  // スタッフロール風
+  busy = true;
+  const dlg = $('dialog'), txt = $('dtext');
+  dlg.style.display = 'block';
+  const credits = [
+    '<b>ちきゅうのメロディ<br>EARTH MELODY</b>',
+    'しゅやく：るい 👧',
+    'おとうと：とき 🧒',
+    'いぬ：琥太郎 🐶（くろしば）',
+    'ママ 👩 ＆ パパ 📞',
+    'そして…… あそんでくれた <b>あなた</b>',
+    '<b>THE END</b><br><br>（Aボタンで タイトルへ）',
+  ];
+  for(const c of credits){
+    txt.innerHTML = `<div style="text-align:center">${c}</div>`;
+    await sleep(300); await waitA();
+  }
+  dlg.style.display = 'none'; busy = false;
+  await saveGame();
+  showTitle();
+}
+
+/* ---------------- 新規ゲーム導入 ---------------- */
+async function newGameIntro(){
+  await dialog([
+    '<b>── とある はれた ごご ──</b>',
+    'ひだまりタウンの ちかくに、<b>いんせき</b>が おちた。',
+    say('ママ','「るい、おきてる？ さっき すごい おとが したでしょう。」'),
+    say('ママ','「うらやまに なにか おちたみたい。ちょっと みてきて くれない？」'),
+    say('ママ','「<b>おとうとの ときも</b> いきたいって。いっしょに つれてって あげてね。」'),
+  ]);
+  S.party.push(makeChar('tokia'));
+  S.flags.tokia = 1;
+  SE.lvup();
+  await dialog([
+    say('とき','「おねえちゃん、まってよ〜！ ぼくも いんせき みる！」'),
+    '<b>おとうとの ときが なかまに くわわった！</b>',
+    'まずは いえを でて、まちの きたにある <b>うらやま</b>へ いこう。',
+    'こまったら ママと はなすと かいふく、<b>でんわ📞</b>で パパに セーブを たのめるよ。',
+  ]);
+}
+
+/* ---------------- タイトル画面 ---------------- */
+function makeStars(){
+  const t = $('title');
+  if(t.querySelector('.star')) return;
+  for(let i=0;i<40;i++){
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.style.cssText = `position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;
+      left:${Math.random()*100}%;top:${Math.random()*100}%;
+      opacity:${.3+Math.random()*.7};animation:tw ${2+Math.random()*3}s infinite alternate;`;
+    t.appendChild(s);
+  }
+  const st = document.createElement('style');
+  st.textContent = '@keyframes tw{from{opacity:.15}to{opacity:1}}';
+  document.head.appendChild(st);
+}
+let titleSel = 0, titleBusy = false;
+async function refreshCont(){
+  const sv = await loadGame();
+  $('optCont').style.opacity = sv ? '1' : '.35';
+  return sv;
+}
+function paintTitle(){
+  $('optNew').classList.toggle('on', titleSel===0);
+  $('optCont').classList.toggle('on', titleSel===1);
+}
+function showTitle(){
+  mode = 'title'; titleSel = 0;
+  playBGM('title');
+  $('title').style.display = 'flex';
+  makeStars(); paintTitle(); refreshCont();
+}
+async function pickTitle(i){
+  if(titleBusy || mode!=='title') return;
+  titleBusy = true;
+  try{
+    if(i===1){
+      const sv = await loadGame();
+      if(!sv){ titleBusy = false; return; }
+      S = sv;
+      $('title').style.display = 'none';
+      mode = 'field';
+      playBGM(mapTrack(S.map));
+      await dialog(['（つづきから はじめます。<br>メロディ：<b>'+mc()+' / 8</b>）']);
+    } else {
+      S = newState();
+      $('title').style.display = 'none';
+      mode = 'field';
+      playBGM('town');
+      await newGameIntro();
+    }
+  } finally { titleBusy = false; }
+}
+$('optNew').addEventListener('touchstart',e=>{e.preventDefault(); ac(); titleSel=0; paintTitle(); pickTitle(0);},{passive:false});
+$('optNew').addEventListener('mousedown',e=>{ac(); titleSel=0; paintTitle(); pickTitle(0);});
+$('optCont').addEventListener('touchstart',e=>{e.preventDefault(); ac(); titleSel=1; paintTitle(); pickTitle(1);},{passive:false});
+$('optCont').addEventListener('mousedown',e=>{ac(); titleSel=1; paintTitle(); pickTitle(1);});
+// タイトル中のキー/パッド操作
+const _fireA0 = fireA;
+window.addEventListener('keydown',e=>{
+  if(mode!=='title' || titleBusy) return;
+  if(e.key==='ArrowUp'||e.key==='ArrowDown'){ titleSel = 1-titleSel; paintTitle(); }
+  if(e.key==='z'||e.key===' '||e.key==='Enter') pickTitle(titleSel);
+});
+(function(){
+  // 仮想パッドでもタイトル操作できるように
+  const up = $('d-up'), dn = $('d-down'), a = $('btnA');
+  const sel = e=>{ if(mode==='title'&&!titleBusy){ e.preventDefault(); titleSel=1-titleSel; paintTitle(); } };
+  up.addEventListener('touchstart',sel,{passive:false}); dn.addEventListener('touchstart',sel,{passive:false});
+  a.addEventListener('touchstart',e=>{ if(mode==='title') pickTitle(titleSel); },{passive:false});
+})();
+
+/* ---------------- BGM (チップチューン・シーケンサー) ---------------- */
+function nf(t){
+  const m = t.match(/^([A-G])(#?)(\d)$/); if(!m) return 0;
+  const base = {C:0,D:2,E:4,F:5,G:7,A:9,B:11}[m[1]] + (m[2]?1:0);
+  return 440*Math.pow(2,((+m[3]+1)*12+base-69)/12);
+}
+const TRACKS = {
+ title:{bpm:92,
+  lead:'C5 E5 G5 B5 - - G5 - A4 C5 E5 G5 - - E5 - F4 A4 C5 E5 - - C5 - G4 B4 D5 F5 - - D5 -',
+  bass:'C3 - - - - - - - A2 - - - - - - - F2 - - - - - - - G2 - - - - - - -', perc:false},
+ town:{bpm:116,
+  lead:'E5 - G5 - C6 - G5 - A5 - G5 - E5 - D5 - E5 - G5 - A5 - G5 - E5 D5 C5 D5 E5 - - -',
+  bass:'C3 - G3 - C3 - G3 - F3 - C3 - G3 - G3 - A3 - E3 - A3 - E3 - F3 - G3 - C3 - C3 -', perc:true},
+ field:{bpm:126,
+  lead:'D5 - G5 A5 B5 - A5 G5 E5 - G5 - A5 - - - D5 - G5 A5 B5 - D6 B5 A5 G5 A5 B5 G5 - - -',
+  bass:'G3 - D3 - G3 - D3 - C3 - G3 - D3 - D3 - G3 - D3 - E3 - B2 - C3 - D3 - G3 - G3 -', perc:true},
+ cave:{bpm:80,
+  lead:'A4 - - - C5 - B4 - A4 - - - E4 - - - F4 - - - A4 - G4 - E4 - - - - - - -',
+  bass:'A2 - - - A2 - - - F2 - - - E2 - - - D2 - - - F2 - - - E2 - - - E2 - - -', perc:false},
+ noise:{bpm:70,
+  lead:'A#4 - - - E4 - - - A#4 - B4 - A#4 - - - F4 - - - B3 - - - C4 - A#3 - - - - -',
+  bass:'A#1 - - - E2 - - - A#1 - - - E2 - - - B1 - - - F2 - - - A#1 - - - A#1 - - -', perc:false},
+ battle:{bpm:150,
+  lead:'E5 E5 G5 E5 B4 D5 E5 - G5 G5 A5 G5 E5 D5 B4 -',
+  bass:'E2 E2 E2 E2 G2 G2 G2 G2 A2 A2 A2 A2 B2 B2 D3 B2', perc:true},
+ boss:{bpm:168,
+  lead:'A4 C5 E5 A5 G5 E5 C5 E5 F5 A5 C6 A5 G5 E5 D5 - A4 C5 E5 A5 B5 A5 G5 F5 E5 D5 C5 D5 E5 G5 A5 -',
+  bass:'A1 A2 A1 A2 A1 A2 A1 A2 F1 F2 F1 F2 F1 F2 F1 F2 G1 G2 G1 G2 G1 G2 G1 G2 E1 E2 E1 E2 E1 E2 E1 E2', perc:true},
+ final:{bpm:140,
+  lead:'E5 - F5 E5 D#5 - E5 - G5 - F5 - E5 - D5 - C5 - B4 C5 D5 - E5 - F5 E5 D5 C5 B4 - - -',
+  bass:'E2 E2 E3 E2 E2 E2 E3 E2 C2 C2 C3 C2 C2 C2 C3 C2 A1 A1 A2 A1 A1 A1 A2 A1 B1 B1 B2 B1 B1 B1 B2 B1', perc:true},
+};
+for(const tr of Object.values(TRACKS)){ tr.L = tr.lead.trim().split(/\s+/); tr.B = tr.bass.trim().split(/\s+/); }
+const BGM = { cur:null, want:null, timer:null, next:0, step:0, paused:false };
+let NOISEBUF = null;
+function noiseBuf(){
+  if(NOISEBUF || !AC) return NOISEBUF;
+  const b = AC.createBuffer(1, AC.sampleRate*0.05, AC.sampleRate);
+  const d = b.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i] = (Math.random()*2-1)*(1-i/d.length);
+  return NOISEBUF = b;
+}
+function bgmTone(freq, t, dur, type, vol){
+  if(!AC || !freq) return;
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(vol, t+0.015);
+  g.gain.setValueAtTime(vol, t+dur*0.6);
+  g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+  o.connect(g); g.connect(AC.destination);
+  o.start(t); o.stop(t+dur+0.02);
+}
+function bgmTick(t){
+  if(!AC) return;
+  const src = AC.createBufferSource(), g = AC.createGain();
+  src.buffer = noiseBuf(); g.gain.value = 0.018;
+  src.connect(g); g.connect(AC.destination); src.start(t);
+}
+function holdLen(arr, i){
+  let n = 1;
+  while(arr[(i+n)%arr.length]==='-' && n<arr.length) n++;
+  return n;
+}
+function bgmStep(){
+  const tr = TRACKS[BGM.cur]; if(!tr) return;
+  const spb = 60/tr.bpm/2; // 8分音符
+  const i = BGM.step % tr.L.length, j = BGM.step % tr.B.length;
+  const ln = tr.L[i], bn = tr.B[j];
+  if(ln!=='-'&&ln!=='.') bgmTone(nf(ln), BGM.next, spb*holdLen(tr.L,i)*0.92, 'square', 0.028);
+  if(bn!=='-'&&bn!=='.') bgmTone(nf(bn), BGM.next, spb*holdLen(tr.B,j)*0.95, 'triangle', 0.05);
+  if(tr.perc && BGM.step%2===0) bgmTick(BGM.next);
+  BGM.next += spb; BGM.step++;
+}
+function bgmSchedule(){
+  if(!AC || !BGM.cur || BGM.paused) return;
+  while(BGM.next < AC.currentTime + 0.15) bgmStep();
+}
+function playBGM(name){
+  BGM.want = name;
+  if(!AC) return;
+  if(BGM.cur === name && !BGM.paused) return;
+  BGM.paused = false;
+  BGM.cur = name; BGM.step = 0; BGM.next = AC.currentTime + 0.06;
+  if(!BGM.timer) BGM.timer = setInterval(bgmSchedule, 60);
+}
+function stopBGM(){ BGM.cur = null; }
+function pauseBGM(ms){
+  BGM.paused = true;
+  setTimeout(()=>{ BGM.paused = false; if(BGM.want){ BGM.cur=null; playBGM(BGM.want); } }, ms);
+}
+function mapTrack(map){
+  if(map==='cave') return 'cave';
+  if(map==='noise') return 'noise';
+  if(map==='home'||map==='town'||map==='shop1'||map==='shop2') return 'town';
+  return 'field';
+}
+
+/* ---------------- 起動 ---------------- */
+/* PWA: サーバ上に sw.js を置けば 完全オフライン化。
+   file:// 単体や sw.js が無い環境では 静かに失敗するだけ（ゲームには影響なし）。
+   このHTMLは外部依存が フォント以外ゼロ（フォントもフォールバックあり）なので、
+   iOSは「ホーム画面に追加」で 電波なしでも起動できる。 */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{ /* 未ホスト時は無視 */ });
+  });
+}
+function boot(){
+  showTitle();
+  loop();
+}
+boot();
+</script>
+</body>
+</html>
