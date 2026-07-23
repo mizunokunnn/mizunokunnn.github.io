@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>面接練習カード — 神戸市特別選考</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #12212F;
+    --bg-2: #0C1821;
+    --paper: #FBF7EE;
+    --paper-shadow: #E4DCC8;
+    --ink: #1D2A32;
+    --ink-soft: #55636B;
+    --gold: #C9962C;
+    --gold-soft: #E7C878;
+    --tier-s: #B33951;
+    --tier-a: #C9962C;
+    --tier-b: #3F7269;
+    --tier-c: #7C8B96;
+    --line: rgba(251,247,238,0.14);
+  }
+  *{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 20% -10%, rgba(201,150,44,0.14), transparent 45%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    color: var(--paper);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding: 20px 14px 40px;
+  }
+
+  .ticket-header{
+    width:100%;
+    max-width:460px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:14px;
+    padding-bottom:10px;
+    border-bottom: 1px dashed var(--line);
+  }
+  .ticket-header .label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.14em;
+    color: var(--gold-soft);
+    text-transform:uppercase;
+  }
+  .ticket-header h1{
+    font-family:'Shippori Mincho', serif;
+    font-size:17px;
+    font-weight:700;
+    margin:2px 0 0;
+    color:var(--paper);
+    letter-spacing:0.02em;
+  }
+  .seat-no{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    background:var(--paper);
+    padding:5px 9px;
+    border-radius:3px;
+    letter-spacing:0.06em;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.25);
+  }
+
+  .filters{
+    width:100%;
+    max-width:460px;
+    display:flex;
+    gap:6px;
+    margin-bottom:14px;
+    flex-wrap:wrap;
+  }
+  .chip{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11.5px;
+    letter-spacing:0.03em;
+    padding:7px 12px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background:rgba(251,247,238,0.04);
+    color: var(--paper);
+    cursor:pointer;
+    transition: all .15s ease;
+  }
+  .chip.active{
+    background: var(--gold);
+    color:#241505;
+    border-color: var(--gold);
+    font-weight:700;
+  }
+  .chip .count{ opacity:0.7; margin-left:3px; }
+
+  .progress-row{
+    width:100%;
+    max-width:460px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:18px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color: var(--ink-soft);
+  }
+  .progress-track{
+    flex:1;
+    height:5px;
+    background:rgba(251,247,238,0.1);
+    border-radius:99px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    background: linear-gradient(90deg, var(--gold-soft), var(--gold));
+    border-radius:99px;
+    transition: width .3s ease;
+  }
+
+  .stage{
+    width:100%;
+    max-width:460px;
+    position:relative;
+    height:400px;
+    perspective: 1400px;
+  }
+  .card{
+    position:absolute;
+    inset:0;
+    border-radius:16px;
+    cursor:pointer;
+    transform-style: preserve-3d;
+    transition: transform .5s cubic-bezier(.2,.8,.2,1);
+  }
+  .card.flipped{ transform: rotateY(180deg); }
+  .face{
+    position:absolute;
+    inset:0;
+    backface-visibility: hidden;
+    border-radius:16px;
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow: 0 18px 40px rgba(0,0,0,0.35), 0 2px 0 var(--paper-shadow);
+    padding:26px 24px 22px;
+    display:flex;
+    flex-direction:column;
+  }
+  .face.back{ transform: rotateY(180deg); }
+
+  .stub-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding-bottom:12px;
+    margin-bottom:16px;
+    border-bottom: 1px dashed var(--paper-shadow);
+  }
+  .qnum{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color: var(--ink-soft);
+    letter-spacing:0.05em;
+  }
+  .tier-badge{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10.5px;
+    font-weight:700;
+    padding:3px 9px;
+    border-radius:5px;
+    color:#fff;
+    letter-spacing:0.05em;
+  }
+  .tier-S{ background: var(--tier-s); }
+  .tier-A{ background: var(--tier-a); color:#241505; }
+  .tier-B{ background: var(--tier-b); }
+  .tier-C{ background: var(--tier-c); }
+
+  .q-text{
+    font-family:'Shippori Mincho', serif;
+    font-size:21px;
+    line-height:1.6;
+    font-weight:700;
+    flex:1;
+    display:flex;
+    align-items:center;
+  }
+  .tap-hint{
+    text-align:center;
+    font-size:11px;
+    color: var(--ink-soft);
+    font-family:'JetBrains Mono', monospace;
+    letter-spacing:0.05em;
+  }
+
+  .a-title{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.1em;
+    color: var(--gold);
+    text-transform:uppercase;
+    margin-bottom:10px;
+    font-weight:700;
+  }
+  .a-list{
+    flex:1;
+    overflow-y:auto;
+    margin:0;
+    padding-left:18px;
+    font-size:14.5px;
+    line-height:1.75;
+    color: var(--ink);
+  }
+  .a-list li{ margin-bottom:6px; }
+
+  .controls{
+    width:100%;
+    max-width:460px;
+    display:flex;
+    gap:10px;
+    margin-top:18px;
+  }
+  .btn{
+    flex:1;
+    padding:14px 8px;
+    border-radius:12px;
+    border:none;
+    font-family:'Zen Kaku Gothic New', sans-serif;
+    font-weight:700;
+    font-size:14.5px;
+    cursor:pointer;
+    transition: transform .1s ease, opacity .15s ease;
+  }
+  .btn:active{ transform: scale(0.96); }
+  .btn-again{
+    background: rgba(251,247,238,0.08);
+    color: var(--paper);
+    border: 1px solid var(--line);
+  }
+  .btn-know{
+    background: linear-gradient(180deg, var(--gold-soft), var(--gold));
+    color: #241505;
+  }
+  .btn:disabled{ opacity:0.35; cursor:default; }
+
+  .nav-row{
+    width:100%;
+    max-width:460px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:12px;
+  }
+  .nav-btn{
+    background:none;
+    border:none;
+    color: var(--ink-soft);
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    padding:8px 4px;
+    cursor:pointer;
+  }
+  .nav-btn.reset{ color: #E4A5AF; }
+
+  .done-screen{
+    width:100%;
+    max-width:460px;
+    text-align:center;
+    padding: 60px 20px;
+    font-family:'Shippori Mincho', serif;
+  }
+  .done-screen .big{ font-size:22px; font-weight:700; margin-bottom:8px; }
+  .done-screen .small{ font-family:'Zen Kaku Gothic New', sans-serif; font-size:13px; color: var(--ink-soft); }
+
+  @media (max-width:380px){
+    .stage{ height:380px; }
+    .q-text{ font-size:19px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="ticket-header">
+    <div>
+      <div class="label">面接想定問答 — 練習カード</div>
+      <h1>神戸市 特別選考 個人面接対策</h1>
+    </div>
+    <div class="seat-no">受験番号 94003</div>
+  </div>
+
+  <div class="filters" id="filters"></div>
+
+  <div class="progress-row">
+    <span id="progress-label">0 / 0</span>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <span id="progress-pct">0%</span>
+  </div>
+
+  <div class="stage" id="stage"></div>
+
+  <div class="controls" id="controls" style="display:none;">
+    <button class="btn btn-again" id="btn-again">もう一度</button>
+    <button class="btn btn-know" id="btn-know">分かった</button>
+  </div>
+
+  <div class="nav-row">
+    <button class="nav-btn" id="btn-shuffle">🔀 シャッフル</button>
+    <button class="nav-btn reset" id="btn-reset">進捗をリセット</button>
+  </div>
+
+<script>
+const CARDS = [
+  {id:1, tier:'S', q:'教員を志望する理由を教えてください', a:['大阪教育大学時代に情報科教員を志望したのが原点','兄の助言で先に民間へ／10年間SEとして勤務','管理職としてチームを育成→教えて評価される瞬間が一番のやりがいと再確認','免許不要の特別選考を知り、節目の10年で覚悟を決めて転職','講師として生徒の「すごい」「面白い」を見て確信が深まった','実務経験を伝承→生徒の社会人スタートラインを早める→日本を元気にしたい']},
+  {id:2, tier:'S', q:'なぜ神戸市を志望するのですか', a:['現在神戸市在住／街並みや治安の良さ＝神戸ブランドに魅力','ICT・情報教育の発展で神戸をより魅力的な街にしたい','「日本を元気にする」という軸を神戸から始めたいという延長線']},
+  {id:3, tier:'A', q:'民間企業で10年働いた経験は教員としてどう活きますか', a:['ERP導入・RPA・BPOに従事、後半は管理職としてメンバー育成','「なぜ必要か」を意識させながら教える経験を積んできた','情報科の「問題解決のための知識活用」という考え方と直結']},
+  {id:4, tier:'S', q:'教員免許を取得せず特別選考を選んだ理由は', a:['免許取得を待つより、実務経験を持ったまま一日でも早く教壇に立ちたかった','節目の10年というタイミングで覚悟を決めた']},
+  {id:5, tier:'B', q:'実際に講師として働いてみて大変だったことは', a:['生徒の既習度にばらつきがあり、発問レベルの調整に苦労','プログラミング授業で生徒の「できた」「面白い」の反応にやりがいを実感']},
+  {id:6, tier:'S', q:'模擬授業(パケット通信の単元)で一番伝えたかったことは', a:['「今は原因が分からない」→自分たちで原因分析・対策提案できる変化を実感させること','Wi-Fi混雑という身近な題材を入口に、知識を「使える道具」として伝えたい']},
+  {id:7, tier:'A', q:'5年後、10年後どんな教員になっていたいですか', a:['5年後：正規教員として現場に立ち、ICT関連の校務にも積極的に関与','10年後：ICT推進の立場で学校・教育委員会レベルに貢献','将来的には管理職として、生徒・教員が力を発揮できる環境づくり']},
+  {id:8, tier:'B', q:'あなたの短所は何ですか', a:['体系立てて説明するのは得意な一方、説明が長くなりすぎることがある(要・実体験で肉付け)','生徒に伝える際は要点を絞り、考えさせる時間を意識的に確保']},
+  {id:9, tier:'A', q:'授業についてこられない生徒、意欲が低い生徒への対応は', a:['「分からない」状態を責めずつまずきを丁寧に把握','全員が答えられる易しい発問から開始／机間巡視で個別に声かけ','身近な例えで「自分ごと」化し、小さな「分かった」を積み重ねる']},
+  {id:10, tier:'A', q:'保護者や他の教員とうまく連携するために意識していることは', a:['前職の管理職経験から報連相を徹底、情報を抱え込まない','生徒の状況を学年団・管理職・保護者と早めに共有']},
+  {id:11, tier:'S', q:'なぜ情報科の教員なのですか(数学や他教科ではなく)', a:['SEとして10年、ITを実務課題の解決に使う経験を積んできた','情報科は「目的や状況に応じて手段を選び問題解決する力」を育てる教科','自分の実務経験を最も直接活かせる教科']},
+  {id:12, tier:'A', q:'ICT担当・図書情報部としての校務経験はどう活きていますか', a:['現任校でBYODサポートやICTインフラ業務に従事','教員側のICT活用支援も経験→現場のつまずきを実感を持って理解','学校全体のICT活用を推進する視点につながっている']},
+  {id:13, tier:'A', q:'教員という仕事でストレスを感じるのはどんな時ですか。どう対処していますか', a:['想定通りに授業が進まない時、生徒の反応が予想と違う時にストレスを感じる','前職のトラブル対応経験から、状況整理→修正の切り替えは早い方','一人で抱え込まず同僚に相談することを大切にしている']},
+  {id:14, tier:'B', q:'挫折経験を教えてください', a:['前職のシステム導入プロジェクトでスケジュール遅延を経験(要・実体験で肉付け)','原因は初期段階の現場ヒアリング不足→以降は合意形成を丁寧に行うよう意識','生徒の既習度・理解度を事前に把握する大切さに今も活きている']},
+  {id:15, tier:'C', q:'講師をしながら他の自治体・私立も併願していますか', a:['神戸市の特別選考に絞って準備','神戸在住で地域への思い入れがあり、免許不要の制度が自分の状況に合致']},
+  {id:16, tier:'B', q:'講師をしながら転職活動という形を取らなかったのはなぜですか', a:['民間から教員への転向は覚悟を持って取り組むべきものと考えた','中途半端な両立でなく、講師として適性を確かめながら特別選考に集中']},
+  {id:17, tier:'B', q:'商業科目(簿記・財務会計・マーケティング)も担当していますが、情報科志望との関係は', a:['商業科目でも「実務でどう使われるか」を意識した指導を重視','情報科と同様、知識をどう活用し問題解決につなげるかという視点は共通']},
+  {id:18, tier:'B', q:'保有資格(基本情報技術者・ITIL・ServiceNow CSA等)は指導にどう活きていますか', a:['いずれも実務でシステムを設計・運用・改善する視点に基づく資格','用語の説明だけでなく、現場での使われ方を具体的に語れることが強み']},
+  {id:19, tier:'B', q:'情報モラルや個人情報保護について、どう指導しますか', a:['ルールを一方的に教え込むのでなく「なぜ問題になるのか」を考えさせる','身近なSNSトラブル事例から原因と対策を自分たちで考えさせる(模擬授業と同じアプローチ)']},
+  {id:20, tier:'B', q:'生徒や保護者からクレームを受けた場合、どう対応しますか', a:['一人で判断せず、事実関係を確認した上で学年主任・管理職に速やかに報告相談','感情的にならず事実整理を優先する姿勢を前職から学んでいる']},
+  {id:21, tier:'B', q:'志望動機と5年後10年後のキャリアビジョンに一貫性はありますか', a:['実務経験を生徒に伝えスタートラインを早めたい、という思いが一貫した軸','5年後・10年後・将来の管理職も同じ思いの延長線上にある']},
+  {id:22, tier:'A', q:'なぜ今年なのですか。もし今回不合格だった場合はどうしますか', a:['10年という節目で退職し、今年を挑戦の年と決意','不合格でも教員になりたい思いは変わらず、講師を続けながら通信制大学など複数の選択肢を検討し、来年以降も挑戦する']},
+  {id:23, tier:'C', q:'1人1台端末やICT機器を活用した授業で意識していることは', a:['端末は目的達成の道具、使うこと自体を目的化しない','生徒の思考や協働を助ける場面でこそ使う']},
+  {id:24, tier:'C', q:'いじめや生徒間トラブルを察知した場合、どう対応しますか', a:['日々の授業や机間巡視でのコミュニケーションで些細な変化も見逃さない','一人で抱えず学年主任・生徒指導部・スクールカウンセラーと速やかに共有']},
+  {id:25, tier:'C', q:'個人情報の管理やセキュリティ事故が起きた場合、どう対応しますか', a:['隠さず速やかに管理職へ報告、事実確認と拡大防止を最優先','状況把握→影響範囲の特定→対応、という手順を前職のトラブル対応経験から理解']},
+  {id:26, tier:'C', q:'ベテランの先生方と、年齢や経験が近い立場でどう関係を築きますか', a:['現場経験の浅さは自覚し、指導方法・生徒対応は謙虚に学ぶ姿勢','実務経験やICTの知見など自分だからこそ提供できる価値もある']},
+  {id:27, tier:'C', q:'生徒との適切な距離感について、どう考えていますか', a:['寄り添うことは大切にしつつ、教員としての立場・責任は曖昧にしない','前職の管理職経験から、距離が近すぎると指導がぶれることを学んだ']},
+  {id:28, tier:'C', q:'働き方改革が求められる中、業務量が多い教員という仕事にどう向き合いますか', a:['前職の業務効率化・RPA導入経験','限られた時間で優先順位をつけ、仕組み化できる業務は仕組み化する','ICTを活用した校務効率化で貢献できる']},
+  {id:29, tier:'C', q:'自己研鑽として、今後どのようなことに取り組みたいですか', a:['Microsoft Educator、Google Certified Educator等の認定資格取得を継続中','今後も情報科教育の研修・資格取得を続けたい']},
+  {id:30, tier:'A', q:'前職を辞めたことに後悔はありませんか', a:['後悔はない、10年の民間経験があるから今伝えられることがある','講師として教壇に立つ中で、教員を目指した判断は間違っていなかったと実感']},
+  {id:31, tier:'A', q:'正規採用にこだわる理由は何ですか。講師のままではだめなのですか', a:['講師でもやりがいはあるが、長期的視点で生徒・学校に関わりたい','ICT推進など校務にも継続的に携わるには正規教員の立場が必要']},
+  {id:32, tier:'C', q:'授業内で予期しない質問やトラブルが起きたら、どう対応しますか', a:['分からないことは正直に伝え、後で調べて必ずフィードバックする','前職でも同じ姿勢で信頼を積み重ねてきた']},
+  {id:33, tier:'C', q:'保護者から前職経験について「畑違いでは」と懸念された場合、どう答えますか', a:['情報科は変化が速い分野、実務の最前線経験が教科書にないリアリティを提供','畑違いでなく情報科指導に直結する強み']},
+  {id:34, tier:'C', q:'最後に何か質問はありますか(逆質問)', a:['神戸市が情報科教育・ICT活用で今後力を入れたい方向性を伺いたい','(当日の空気感で、新任研修の内容やICT校務との関わり方などに差し替え可)']},
+];
+
+const STORAGE_KEY = 'interview-flashcards-known-v1';
+let known = new Set();
+let queue = [];
+let activeTier = 'ALL';
+let currentIndex = 0;
+let isFlipped = false;
+
+const tierLabel = {ALL:'すべて', S:'S', A:'A', B:'B', C:'C'};
+const tierOrder = ['ALL','S','A','B','C'];
+
+async function loadKnown(){
+  try{
+    const res = await window.storage.get(STORAGE_KEY, false);
+    if(res && res.value){
+      known = new Set(JSON.parse(res.value));
+    }
+  }catch(e){ known = new Set(); }
+}
+
+async function saveKnown(){
+  try{
+    await window.storage.set(STORAGE_KEY, JSON.stringify([...known]), false);
+  }catch(e){ /* best effort */ }
+}
+
+function tierCount(tier){
+  if(tier==='ALL') return CARDS.length;
+  return CARDS.filter(c=>c.tier===tier).length;
+}
+function tierRemaining(tier){
+  const list = tier==='ALL' ? CARDS : CARDS.filter(c=>c.tier===tier);
+  return list.filter(c=>!known.has(c.id)).length;
+}
+
+function buildQueue(){
+  let list = activeTier==='ALL' ? CARDS.slice() : CARDS.filter(c=>c.tier===activeTier);
+  queue = list.filter(c=>!known.has(c.id));
+  currentIndex = 0;
+  isFlipped = false;
+}
+
+function renderFilters(){
+  const el = document.getElementById('filters');
+  el.innerHTML = '';
+  tierOrder.forEach(t=>{
+    const chip = document.createElement('div');
+    chip.className = 'chip' + (t===activeTier ? ' active':'');
+    chip.innerHTML = tierLabel[t] + '<span class="count">' + tierRemaining(t) + '/' + tierCount(t) + '</span>';
+    chip.onclick = ()=>{ activeTier = t; buildQueue(); renderAll(); };
+    el.appendChild(chip);
+  });
+}
+
+function renderProgress(){
+  const total = activeTier==='ALL' ? CARDS.length : tierCount(activeTier);
+  const remaining = queue.length;
+  const doneCount = total - remaining;
+  const pct = total ? Math.round((doneCount/total)*100) : 0;
+  document.getElementById('progress-label').textContent = doneCount + ' / ' + total;
+  document.getElementById('progress-pct').textContent = pct + '%';
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+function renderStage(){
+  const stage = document.getElementById('stage');
+  const controls = document.getElementById('controls');
+  if(queue.length===0){
+    controls.style.display = 'none';
+    stage.innerHTML = '<div class="done-screen"><div class="big">🎌 このセットは終了</div><div class="small">お疲れさま。別のタグを選ぶか、リセットしてもう一周どうぞ。</div></div>';
+    return;
+  }
+  controls.style.display = 'flex';
+  const card = queue[currentIndex];
+  stage.innerHTML = `
+    <div class="card ${isFlipped ? 'flipped':''}" id="flip-card">
+      <div class="face front">
+        <div class="stub-row">
+          <span class="qnum">Q${String(card.id).padStart(2,'0')} / 34</span>
+          <span class="tier-badge tier-${card.tier}">TIER ${card.tier}</span>
+        </div>
+        <div class="q-text">${card.q}</div>
+        <div class="tap-hint">タップして回答のポイントを見る ▸</div>
+      </div>
+      <div class="face back">
+        <div class="stub-row">
+          <span class="qnum">Q${String(card.id).padStart(2,'0')} / 34</span>
+          <span class="tier-badge tier-${card.tier}">TIER ${card.tier}</span>
+        </div>
+        <div class="a-title">回答のポイント</div>
+        <ul class="a-list">${card.a.map(x=>'<li>'+x+'</li>').join('')}</ul>
+      </div>
+    </div>
+  `;
+  document.getElementById('flip-card').onclick = ()=>{
+    isFlipped = !isFlipped;
+    document.getElementById('flip-card').classList.toggle('flipped', isFlipped);
+  };
+}
+
+function renderAll(){
+  renderFilters();
+  renderProgress();
+  renderStage();
+}
+
+function nextCard(){
+  isFlipped = false;
+  if(queue.length===0){ renderAll(); return; }
+  currentIndex = currentIndex % queue.length;
+  renderAll();
+}
+
+document.getElementById('btn-know').onclick = async ()=>{
+  if(queue.length===0) return;
+  const card = queue[currentIndex];
+  known.add(card.id);
+  await saveKnown();
+  queue.splice(currentIndex,1);
+  if(currentIndex >= queue.length) currentIndex = 0;
+  nextCard();
+};
+
+document.getElementById('btn-again').onclick = ()=>{
+  if(queue.length===0) return;
+  const card = queue.splice(currentIndex,1)[0];
+  queue.push(card);
+  if(currentIndex >= queue.length) currentIndex = 0;
+  nextCard();
+};
+
+document.getElementById('btn-shuffle').onclick = ()=>{
+  for(let i=queue.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [queue[i],queue[j]] = [queue[j],queue[i]];
+  }
+  currentIndex = 0;
+  nextCard();
+};
+
+document.getElementById('btn-reset').onclick = async ()=>{
+  known.clear();
+  await saveKnown();
+  buildQueue();
+  renderAll();
+};
+
+(async function init(){
+  await loadKnown();
+  buildQueue();
+  renderAll();
+})();
+</script>
+</body>
+</html>
