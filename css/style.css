@@ -1,0 +1,50 @@
+@charset "UTF-8";
+body {
+	background-color: #ffffff;
+}
+h1 {
+	font-family: "Noto Serif JP", serif;
+	font-size: 150px;	
+	text-align: center;
+	color: #01635c;
+}
+h2 {
+	font-family: "Noto Serif JP", serif;
+	font-size: 50px;	
+	text-align: center;
+	color: #01635c;
+}
+p {
+	font-family: "Noto Serif JP", serif;
+	font-size: 20px;
+	color: #01635c;
+	line-height: 1.7;
+}
+a {
+	font-family: "Noto Serif JP", serif;
+	font-size: 20px;
+	line-height: 1.7;
+}
+.title-box {
+	font-family: "Noto Serif JP", serif;
+	padding: 20px;
+	text-align: center;
+}
+.content {
+	font-family: "Noto Serif JP", serif;
+	padding: 20px;
+	text-align: center;	
+}
+.flex-container div {
+	font-family: "Noto Serif JP", serif;
+	margin: 5px;
+	padding: 10px;
+	width: 200px;
+	text-align: center;
+/*	border: 1px solid #01635c; */
+}
+.flex-container {
+	display: flex;
+	justify-content: center; /* 要素間のスペース調整 */
+	align-items: center; /* 縦方向の揃え方 */
+}
