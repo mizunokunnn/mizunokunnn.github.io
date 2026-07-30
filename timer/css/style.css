@@ -1,0 +1,71 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#1e293b;
+    color:white;
+    font-family:"Yu Gothic";
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+}
+
+.container{
+    width:90%;
+    max-width:700px;
+    text-align:center;
+}
+
+h1{
+    margin-bottom:25px;
+}
+
+#timer{
+    font-size:120px;
+    font-weight:bold;
+    margin:30px 0;
+}
+
+.warning{
+    color:orange;
+}
+
+.danger{
+    color:red;
+    animation:flash .8s infinite;
+}
+
+@keyframes flash{
+    50%{
+        opacity:0.2;
+    }
+}
+
+button{
+    padding:15px 25px;
+    margin:8px;
+    font-size:20px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+button:hover{
+    transform:scale(1.05);
+}
+
+input{
+    width:100px;
+    padding:10px;
+    font-size:22px;
+    text-align:center;
+}
+
+#status{
+    margin-top:20px;
+    font-size:28px;
+}

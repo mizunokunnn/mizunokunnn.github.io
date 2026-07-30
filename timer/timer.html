@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>授業タイマー</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>授業タイマー</h1>
+
+    <div id="timer">05:00</div>
+
+    <div class="preset">
+        <button onclick="preset(0.5)">30秒</button>
+        <button onclick="preset(1)">1分</button>
+        <button onclick="preset(3)">3分</button>
+        <button onclick="preset(5)">5分</button>
+        <button onclick="preset(10)">10分</button>
+        <button onclick="preset(15)">15分</button>
+    </div>
+
+    <div class="custom">
+        <input id="minutes" type="float" value="5">
+        <button onclick="setCustom()">設定</button>
+    </div>
+
+    <div class="controls">
+        <button onclick="startTimer()">▶ スタート</button>
+        <button onclick="pauseTimer()">⏸ 一時停止</button>
+        <button onclick="resetTimer()">🔄 リセット</button>
+        <button onclick="fullscreen()">🖥 全画面</button>
+    </div>
+
+    <div id="status"></div>
+
+</div>
+
+<script src="js/script.js"></script>
+
+</body>
+</html>

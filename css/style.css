@@ -2,41 +2,36 @@
 body {
 	background-color: #ffffff;
 }
-h1 {
-	font-family: "Noto Serif JP", serif;
-	font-size: 150px;	
-	text-align: center;
-	color: #01635c;
-}
 h2 {
-	font-family: "Noto Serif JP", serif;
+	font-family: "DotGothic16", sans-serif;
 	font-size: 50px;	
 	text-align: center;
 	color: #01635c;
 }
 p {
-	font-family: "Noto Serif JP", serif;
+	font-family: "DotGothic16", sans-serif;
 	font-size: 20px;
 	color: #01635c;
+	text-align: center;
 	line-height: 1.7;
 }
 a {
-	font-family: "Noto Serif JP", serif;
+	font-family: "DotGothic16", sans-serif;
 	font-size: 20px;
 	line-height: 1.7;
 }
 .title-box {
-	font-family: "Noto Serif JP", serif;
+	font-family: "DotGothic16", sans-serif;
 	padding: 20px;
 	text-align: center;
 }
 .content {
-	font-family: "Noto Serif JP", serif;
+	font-family: "DotGothic16", sans-serif;
 	padding: 20px;
 	text-align: center;	
 }
 .flex-container div {
-	font-family: "Noto Serif JP", serif;
+	font-family: "DotGothic16", sans-serif;
 	margin: 5px;
 	padding: 10px;
 	width: 200px;
@@ -47,4 +42,23 @@ a {
 	display: flex;
 	justify-content: center; /* 要素間のスペース調整 */
 	align-items: center; /* 縦方向の揃え方 */
+}
+.header_background_image {
+	position: relative; /* 親要素を基準にする */
+	/* width: 600px; /* 必要に応じてサイズ調整 */
+}
+.header_background_image img {
+	width: 100%; /* 画像を親要素にフィットさせる */
+}
+.header_background_image h1 {
+	font-family: "DotGothic16", sans-serif;
+	position: absolute; /* 絶対位置指定 */
+	top: 50%; /* 縦方向中央 */
+	left: 50%; /* 横方向中央 */
+	transform: translate(-50%, -50%); /* 完全中央寄せ */
+	margin: 0; /* デフォルトのマージンをリセット */
+	padding: 0; /* デフォルトのパディングをリセット */
+	color: white; /* テキスト色 */
+	font-size: 120px; /* フォントサイズ */
+	font-weight: bold; /* 太字 */
 }
