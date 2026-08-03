@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+
+    <!-- スマホ表示対応 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>授業用ルーレット</title>
+
+    <!-- CSSファイル読み込み -->
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+
+<body>
+
+    <!-- =================================
+        ページ全体
+    ================================== -->
+    <div class="container">
+
+
+        <!-- =================================
+            タイトル部分
+        ================================== -->
+        <header>
+
+            <h1>
+                授業用ルーレット
+            </h1>
+
+        </header>
+
+
+
+        <!-- =================================
+            メインエリア
+            左：名前入力
+            右：ルーレット
+        ================================== -->
+        <main>
+
+
+            <!-- =============================
+                左側：名前管理エリア
+            ============================== -->
+            <section class="name-area">
+
+
+                <h2>
+                    名前登録
+                </h2>
+
+
+                <!--
+                    1行につき1人入力する
+                    textareaなので複数入力可能
+                -->
+                <textarea
+                    id="nameInput"
+                    placeholder="名前を1行に1人入力してください&#13;&#10;&#13;&#10;例&#13;&#10;山田&#13;&#10;田中&#13;&#10;佐藤">
+                </textarea>
+
+
+                <div class="button-area">
+
+
+                    <!-- 名前登録ボタン -->
+                    <button id="registerButton">
+                        登録
+                    </button>
+
+
+                    <!-- 登録者全削除ボタン -->
+                    <button id="deleteButton">
+                        全削除
+                    </button>
+
+
+                </div>
+
+
+                <!-- 登録人数表示 -->
+                <p class="member-count">
+
+                    登録人数：
+                    <span id="memberCount">
+                        0
+                    </span>
+                    人
+
+                </p>
+
+
+            </section>
+
+
+
+
+
+            <!-- =============================
+                右側：ルーレットエリア
+            ============================== -->
+            <section class="roulette-area">
+
+
+                <h2>
+                    ルーレット
+                </h2>
+
+
+
+                <!--
+                    Canvas
+
+                    JavaScriptでここに円盤を描画する
+                -->
+                <div class="canvas-wrapper">
+
+                    <canvas
+                        id="rouletteCanvas"
+                        width="500"
+                        height="500">
+                    </canvas>
+
+
+                    <!--
+                        ルーレット停止位置を示す矢印
+                    -->
+                    <div class="pointer">
+                        ▼
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- スタートボタン -->
+                <button
+                    id="startButton"
+                    class="start-button">
+
+                    START
+
+                </button>
+
+
+            </section>
+
+
+        </main>
+
+
+
+
+
+        <!-- =================================
+            抽選結果
+        ================================== -->
+        <section class="result-area">
+
+
+            <h2>
+                今回の発表者
+            </h2>
+
+
+            <!--
+                当選者表示場所
+            -->
+            <div id="winner">
+
+                まだ抽選されていません
+
+            </div>
+
+
+        </section>
+
+
+
+
+
+        <!-- =================================
+            抽選履歴
+        ================================== -->
+        <section class="history-area">
+
+
+            <h2>
+                抽選履歴
+            </h2>
+
+
+            <!--
+                JavaScriptで履歴を追加する
+            -->
+            <ul id="historyList">
+
+            </ul>
+
+
+        </section>
+
+
+
+
+
+        <!-- =================================
+            設定エリア
+        ================================== -->
+        <section class="setting-area">
+
+
+            <label>
+
+                <input
+                    type="checkbox"
+                    id="removeWinnerCheckbox">
+
+                当選者を次回以降除外する
+
+            </label>
+
+
+
+            <button
+                id="resetButton">
+
+                除外状態リセット
+
+            </button>
+
+
+        </section>
+
+
+
+    </div>
+
+
+
+    <!-- JavaScriptファイル読み込み -->
+    <script src="script.js"></script>
+
+
+</body>
+
+</html>
